@@ -18,3 +18,14 @@ export async function requireAgent() {
   }
   return session.user;
 }
+
+// Team account management (add/edit/remove other admins) is OWNER-only —
+// replaces the legacy's single shared admin password with real per-user
+// accounts and a role that actually restricts sensitive actions.
+export async function requireOwner() {
+  const user = await requireAdmin();
+  if (user.adminRole !== "OWNER") {
+    throw new Error("Only owners can manage team accounts");
+  }
+  return user;
+}
