@@ -425,6 +425,22 @@ model OrgSettings {
   defaultFooterLine2 String?
   defaultFooterLine3 String?
 
+  // Invoice defaults — the legacy invoice.html hardcoded these as JS
+  // constants (DEFAULT_COMPANY_FOOTER, default bank fields). Moving them
+  // into real settings means changing the company's bank details doesn't
+  // require a code change, while still snapshotting onto each Invoice at
+  // creation time so historical invoices don't retroactively change
+  // (Phase 1 §7 rule 8).
+  invoiceFooterEmail   String @default("info@topway.lk")
+  invoiceFooterPhone   String @default("+94 115 991 089")
+  invoiceFooterFax     String @default("+94 115 931 272")
+  invoiceFooterAddress String @default("No.95 1/1, S. Mahinda Himi Mawatha, Maradana, Colombo 10")
+  invoiceFooterWebsite String @default("www.topway.lk")
+  defaultBankName      String @default("COMMERCIAL BANK – COLOMBO -03")
+  defaultAccountNo     String @default("8110040878")
+  defaultAccountName   String @default("M.Z.M AZZAM")
+  defaultSwiftCode     String @default("CCEYKLXXXX")
+
   updatedAt DateTime @updatedAt
 
   @@map("org_settings")
