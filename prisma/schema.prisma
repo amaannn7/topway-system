@@ -1,0 +1,461 @@
+// Topway Portal — relational schema.
+//
+// Redesigned from the legacy flat-file JSON store (data/profiles.json,
+// data/agents.json, data/invoices.json) documented in the Phase 1 discovery.
+// Key departures from the legacy shape, on purpose:
+//   - Real foreign keys instead of ID arrays copy-pasted between JSON files
+//     (legacy Agent.applicantIds / pendingIds had no referential integrity —
+//     deleting an applicant left dangling IDs behind).
+//   - Pipeline steps are rows in an ordered join table, not six hardcoded
+//     boolean/date column pairs — still exactly six steps in the same fixed
+//     order (Medical -> Enjaz -> Bureau -> Wakalah -> Embassy -> Payment),
+//     just modeled so the order and completion state are real data.
+//   - Enums replace magic strings (workerCategory, experienceType, invoice
+//     currency, advance status) that were free-text in the old JSON.
+//   - Multi-admin accounts with roles replace the single shared admin
+//     password + one static derived token.
+//   - AuditLog is new — nothing in the legacy system recorded who changed
+//     a pipeline step or deleted a profile.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ────────────────────────────────────────────────────────────────
+// Auth / accounts
+// ────────────────────────────────────────────────────────────────
+
+enum AdminRole {
+  OWNER // full access, manages other admin accounts
+  STAFF // day-to-day operations, no team/settings management
+}
+
+model AdminUser {
+  id           String    @id @default(cuid())
+  name         String
+  email        String    @unique
+  passwordHash String
+  role         AdminRole @default(STAFF)
+  active       Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  sessions  Session[]
+  auditLogs AuditLog[]
+
+  @@map("admin_users")
+}
+
+// NextAuth database-session model (Auth.js credentials + DB session strategy).
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  expires      DateTime
+  adminUserId  String?
+  agentId      String?
+
+  adminUser AdminUser? @relation(fields: [adminUserId], references: [id], onDelete: Cascade)
+  agent     Agent?     @relation(fields: [agentId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+// ────────────────────────────────────────────────────────────────
+// Foreign agents (Topway's B2B customers abroad)
+// ────────────────────────────────────────────────────────────────
+
+model Agent {
+  id           String   @id @default(cuid())
+  name         String // primary contact person
+  company      String
+  country      String
+  username     String   @unique
+  passwordHash String
+  active       Boolean  @default(true)
+  logoUrl      String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  sessions    Session[]
+  assignments AgentAssignment[]
+  requests    AgentRequest[]
+  invoices    Invoice[]
+
+  @@map("agents")
+}
+
+// Replaces Agent.applicantIds — a real many-to-many join instead of an
+// unenforced ID array, so deleting an Applicant cascades cleanly.
+model AgentAssignment {
+  id          String   @id @default(cuid())
+  agentId     String
+  applicantId String
+  assignedAt  DateTime @default(now())
+
+  agent     Agent     @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  applicant Applicant @relation(fields: [applicantId], references: [id], onDelete: Cascade)
+
+  @@unique([agentId, applicantId])
+  @@map("agent_assignments")
+}
+
+// Replaces Agent.pendingIds — an agent's "Browse & Request" ask, awaiting
+// admin approval. Kept as its own table (not just a status enum on
+// AgentAssignment) because a request has no assignment row until approved.
+model AgentRequest {
+  id          String        @id @default(cuid())
+  agentId     String
+  applicantId String
+  status      RequestStatus @default(PENDING)
+  requestedAt DateTime      @default(now())
+  resolvedAt  DateTime?
+
+  agent     Agent     @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  applicant Applicant @relation(fields: [applicantId], references: [id], onDelete: Cascade)
+
+  @@unique([agentId, applicantId])
+  @@map("agent_requests")
+}
+
+enum RequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED // agent withdrew the request themselves
+}
+
+// ────────────────────────────────────────────────────────────────
+// Applicants (the candidates being placed)
+// ────────────────────────────────────────────────────────────────
+
+enum MaritalStatus {
+  SINGLE
+  MARRIED
+  DIVORCED
+  WIDOWED
+}
+
+enum WorkerCategory {
+  AVAILABLE_EXPERIENCED
+  AVAILABLE_INEXPERIENCED
+  CONTRACTED
+}
+
+enum ExperienceType {
+  HM_21_49_EXP
+  HM_50_55_EXP
+  HM_51_55_EXP
+  HM_FIRST_TIME
+  COUPLE
+  DRIVER
+  HOUSE_BOY
+}
+
+enum PipelineStatus {
+  ACTIVE // normal in-flight state; derived display status computed from steps
+  SENT // placed with an employer — excluded from agent browse pool
+  CANCELLED
+}
+
+model Applicant {
+  id String @id @default(cuid())
+
+  // F — Reference block
+  refNo String?
+  name  String
+
+  // A — Role
+  role     String @default("HOUSEMAID")
+  contract String @default("2 YEARS")
+
+  // C — Personal information
+  nationality   String?
+  religion      String?
+  dateOfBirth   DateTime?      @db.Date
+  age           Int?
+  heightCm      Int?
+  weightKg      Int?
+  maritalStatus MaritalStatus?
+  children      Int?
+
+  // D — Passport details
+  passportNo         String?
+  passportIssuedAt   String?
+  passportIssueDate  DateTime? @db.Date
+  passportExpiryDate DateTime? @db.Date
+
+  // E — Educational qualification
+  educationLevel String?
+  educationYear  Int?
+
+  // B — Skills
+  skillCleaning    Boolean @default(false)
+  skillWashing     Boolean @default(false)
+  skillBabysitting Boolean @default(false)
+  skillCooking     Boolean @default(false)
+  skillDriving     Boolean @default(false)
+
+  // H — Languages
+  englishSpeaking Boolean @default(false)
+  englishWriting  Boolean @default(false)
+  arabicSpeaking  Boolean @default(false)
+  arabicWriting   Boolean @default(false)
+
+  // I — PDF footer lines (per-profile override; falls back to org default)
+  footerLine1 String?
+  footerLine2 String?
+  footerLine3 String?
+
+  // H2 — Internal-only contact details (never exposed to agents)
+  phone            String?
+  whatsapp         String?
+  email            String?
+  emergencyContact String?
+  address          String?
+
+  // Operational / pipeline metadata
+  pipelineStatus     PipelineStatus  @default(ACTIVE)
+  workerCategory     WorkerCategory?
+  experienceType     ExperienceType?
+  confirmed          Boolean         @default(false) // gates passport docs to agents
+  musanedDate        DateTime?       @db.Date
+  ticketDate         DateTime?       @db.Date
+  saudiAgentVisaDate DateTime?       @db.Date
+  notes              String?
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdById String?
+
+  employmentHistory EmploymentRecord[]
+  pipelineSteps     PipelineStep[]
+  photos            ApplicantPhoto[]
+  documents         ApplicantDocument[]
+  assignments       AgentAssignment[]
+  requests          AgentRequest[]
+  invoiceWorkers    InvoiceWorker[]
+
+  @@index([name])
+  @@index([pipelineStatus])
+  @@index([workerCategory])
+  @@map("applicants")
+}
+
+// G — Employment record (repeatable rows)
+model EmploymentRecord {
+  id          String @id @default(cuid())
+  applicantId String
+  position    String
+  country     String
+  period      String
+  sortOrder   Int    @default(0)
+
+  applicant Applicant @relation(fields: [applicantId], references: [id], onDelete: Cascade)
+
+  @@map("employment_records")
+}
+
+// Six fixed steps, always seeded in this order for every new applicant:
+// Medical -> Enjaz -> Bureau -> Wakalah -> Embassy -> Payment.
+// `key` + `sortOrder` preserve exact legacy semantics; storing them as rows
+// (vs. six hardcoded columns) makes the derived status computation and the
+// audit trail uniform instead of six near-duplicate code paths.
+enum PipelineStepKey {
+  MEDICAL
+  ENJAZ
+  BUREAU
+  WAKALAH
+  EMBASSY
+  PAYMENT
+}
+
+model PipelineStep {
+  id          String          @id @default(cuid())
+  applicantId String
+  key         PipelineStepKey
+  sortOrder   Int
+  completed   Boolean         @default(false)
+  completedAt DateTime?       @db.Date
+
+  applicant Applicant @relation(fields: [applicantId], references: [id], onDelete: Cascade)
+
+  @@unique([applicantId, key])
+  @@map("pipeline_steps")
+}
+
+enum PhotoKind {
+  HEADSHOT // always derived from FULL_BODY via the crop tool, never uploaded standalone
+  FULL_BODY
+}
+
+model ApplicantPhoto {
+  id          String    @id @default(cuid())
+  applicantId String
+  kind        PhotoKind
+  url         String
+  uploadedAt  DateTime  @default(now())
+
+  applicant Applicant @relation(fields: [applicantId], references: [id], onDelete: Cascade)
+
+  @@unique([applicantId, kind])
+  @@map("applicant_photos")
+}
+
+// Passport scan + alteration/observation page. Visible to the assigned
+// agent only once Applicant.confirmed = true (legacy business rule,
+// preserved exactly — see Phase 1 §7 rule 5).
+enum DocumentKind {
+  PASSPORT
+  ALTERATION_PAGE
+}
+
+model ApplicantDocument {
+  id          String       @id @default(cuid())
+  applicantId String
+  kind        DocumentKind
+  url         String
+  mimeType    String
+  uploadedAt  DateTime     @default(now())
+
+  applicant Applicant @relation(fields: [applicantId], references: [id], onDelete: Cascade)
+
+  @@unique([applicantId, kind])
+  @@map("applicant_documents")
+}
+
+// ────────────────────────────────────────────────────────────────
+// Invoices
+// ────────────────────────────────────────────────────────────────
+
+enum Currency {
+  KD
+  USD
+  SAR
+  AED
+  QAR
+  BHD
+  OMR
+  EUR
+}
+
+enum AdvanceStatus {
+  NONE
+  REQUESTED
+  PAID
+}
+
+model Invoice {
+  id           String   @id @default(cuid())
+  invoiceNo    String
+  invoicedDate DateTime @db.Date
+  currency     Currency @default(KD)
+
+  // Bill-to — optionally linked to a real Agent, but always snapshotted as
+  // plain fields so a later edit to the Agent record can't retroactively
+  // change a historical invoice (legacy rule, preserved — Phase 1 §7 rule 8).
+  agentId         String?
+  billToTitle     String
+  billToCompany   String
+  billToPurpose   String
+  billToLicenseNo String?
+
+  serviceType String @default("HOUSEMAID WORKERS")
+
+  advanceStatus AdvanceStatus @default(NONE)
+  advanceAmount Decimal       @default(0) @db.Decimal(12, 2)
+  total         Decimal       @db.Decimal(12, 2)
+
+  paymentMethod String
+
+  bankName    String
+  accountNo   String
+  accountName String
+  swiftCode   String
+
+  notes String?
+
+  // Company footer snapshot (email/phone/fax/address/website at time of
+  // issue) — same immutability rationale as the bill-to snapshot above.
+  footerEmail   String
+  footerPhone   String
+  footerFax     String
+  footerAddress String
+  footerWebsite String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  agent   Agent?          @relation(fields: [agentId], references: [id], onDelete: SetNull)
+  workers InvoiceWorker[]
+
+  @@unique([invoiceNo])
+  @@map("invoices")
+}
+
+model InvoiceWorker {
+  id          String  @id @default(cuid())
+  invoiceId   String
+  applicantId String? // optional link back to the real applicant, when known
+  name        String
+  qty         Int     @default(1)
+  amount      Decimal @db.Decimal(12, 2)
+  sortOrder   Int     @default(0)
+
+  invoice   Invoice    @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  applicant Applicant? @relation(fields: [applicantId], references: [id], onDelete: SetNull)
+
+  @@map("invoice_workers")
+}
+
+// ────────────────────────────────────────────────────────────────
+// Organization-wide settings (replaces the legacy "__global__" fake
+// applicant record used to smuggle a shared logo into profiles.json)
+// ────────────────────────────────────────────────────────────────
+
+model OrgSettings {
+  id                 String  @id @default("singleton")
+  headerLogoUrl      String?
+  allowAgentBrowse   Boolean @default(false)
+  defaultFooterLine1 String?
+  defaultFooterLine2 String?
+  defaultFooterLine3 String?
+
+  updatedAt DateTime @updatedAt
+
+  @@map("org_settings")
+}
+
+// ────────────────────────────────────────────────────────────────
+// Audit log — new; nothing in the legacy system recorded who changed
+// a pipeline step, confirmed a candidate, or deleted a profile.
+// ────────────────────────────────────────────────────────────────
+
+enum AuditAction {
+  CREATE
+  UPDATE
+  DELETE
+  STATUS_CHANGE
+  LOGIN
+}
+
+model AuditLog {
+  id          String      @id @default(cuid())
+  adminUserId String?
+  action      AuditAction
+  entityType  String // e.g. "Applicant", "Agent", "Invoice"
+  entityId    String
+  summary     String // human-readable one-liner, e.g. "Marked Medical complete"
+  metadata    Json?
+  createdAt   DateTime    @default(now())
+
+  adminUser AdminUser? @relation(fields: [adminUserId], references: [id], onDelete: SetNull)
+
+  @@index([entityType, entityId])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
