@@ -47,3 +47,8 @@ next-env.d.ts
 /.claude/
 /.windsurf/
 skills-lock.json
+
+# user-uploaded content (local-disk storage for dev; swap for cloud storage
+# in production — see src/lib/uploads.ts)
+/public/uploads/*
+!/public/uploads/.gitkeep
