@@ -4,6 +4,7 @@ import { deriveStatus } from "@/lib/pipeline-status";
 import { ApplicantStatusBadge } from "../applicant-status-badge";
 import { ApplicantTabsNav } from "./applicant-tabs-nav";
 import { DeleteApplicantButton } from "./delete-applicant-button";
+import { PdfPreviewDialog, PdfPreviewTriggerButton } from "@/components/pdf-preview-dialog";
 
 export default async function ApplicantDetailLayout({
   children,
@@ -40,7 +41,15 @@ export default async function ApplicantDetailLayout({
           </div>
           <p className="text-sm text-muted-foreground">{applicant.role}</p>
         </div>
-        <DeleteApplicantButton applicantId={applicant.id} name={applicant.name} />
+        <div className="flex gap-2">
+          <PdfPreviewDialog
+            pdfUrl={`/admin/applicants/${applicant.id}/cv`}
+            fileName={`${applicant.name || "candidate"}-cv.pdf`}
+            title={`CV — ${applicant.name || "Applicant"}`}
+            trigger={<PdfPreviewTriggerButton label="Preview CV" />}
+          />
+          <DeleteApplicantButton applicantId={applicant.id} name={applicant.name} />
+        </div>
       </div>
 
       <ApplicantTabsNav applicantId={applicant.id} />

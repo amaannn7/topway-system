@@ -6,7 +6,8 @@ import {
   CardDescription,
   CardHeader,
 } from "@/components/ui/card";
-import { Users, PlaneTakeoff, Clock, XCircle } from "lucide-react";
+import { Users, PlaneTakeoff, CheckCircle2, Clock, XCircle } from "lucide-react";
+import { deriveStatus } from "@/lib/pipeline-status";
 
 export default async function AgentDashboardPage() {
   const session = await auth();
@@ -26,20 +27,26 @@ export default async function AgentDashboardPage() {
   });
 
   let ready = 0;
+  let complete = 0;
   let inProgress = 0;
   let cancelled = 0;
 
   for (const { applicant: a } of assigned) {
-    const allDone = a.pipelineSteps.every((s) => s.completed);
-    const anyDone = a.pipelineSteps.some((s) => s.completed);
-    if (a.pipelineStatus === "CANCELLED") cancelled++;
-    else if (allDone && a.ticketDate) ready++;
-    else if (anyDone) inProgress++;
+    const status = deriveStatus(a);
+    if (status === "READY") ready++;
+    else if (status === "COMPLETE") complete++;
+    else if (status === "PROGRESS") inProgress++;
+    else if (status === "CANCELLED") cancelled++;
   }
 
+  // Matches the legacy's 5-stat row (Total/Ready/Fully Processed/In
+  // Progress/Cancelled) — a prior pass here dropped "Fully Processed"
+  // entirely, so agents couldn't tell "done but no ticket yet" apart from
+  // "still in progress."
   const stats = [
     { label: "Total", value: assigned.length, icon: Users },
     { label: "Ready to travel", value: ready, icon: PlaneTakeoff },
+    { label: "Fully processed", value: complete, icon: CheckCircle2 },
     { label: "In progress", value: inProgress, icon: Clock },
     { label: "Cancelled", value: cancelled, icon: XCircle },
   ];
@@ -53,7 +60,7 @@ export default async function AgentDashboardPage() {
         </p>
       </div>
 
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
         {stats.map((stat) => (
           <Card key={stat.label}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">

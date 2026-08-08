@@ -21,6 +21,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { createInvoice, updateInvoice } from "./actions";
+import { InvoiceFormPreviewButton } from "./invoice-form-preview-button";
 
 const CURRENCIES = ["KD", "USD", "SAR", "AED", "QAR", "BHD", "OMR", "EUR"] as const;
 const TITLES = ["MR.", "MRS.", "MS.", "DR.", "COMPANY"] as const;
@@ -80,7 +81,7 @@ export function InvoiceForm({
     },
   });
 
-  const { register, handleSubmit, control, watch, setValue, formState } = form;
+  const { register, handleSubmit, control, watch, setValue, getValues, formState } = form;
   const { fields, append, remove } = useFieldArray({ control, name: "workers" });
 
   const workers = watch("workers");
@@ -375,6 +376,7 @@ export function InvoiceForm({
       </Card>
 
       <div className="flex justify-end gap-2 pb-6">
+        <InvoiceFormPreviewButton getValues={getValues} />
         <Button type="submit" disabled={pending}>
           {pending ? "Saving…" : invoiceId ? "Save changes" : "Create invoice"}
         </Button>

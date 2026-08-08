@@ -15,7 +15,7 @@ import {
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { STATUS_LABEL } from "@/lib/pipeline-status";
-import { WORKER_CATEGORY_LABELS } from "@/lib/constants/applicant";
+import { WORKER_CATEGORY_LABELS, EXPERIENCE_TYPE_LABELS } from "@/lib/constants/applicant";
 
 const CATEGORY_PILLS = [
   { value: "", label: "All workers" },
@@ -24,7 +24,7 @@ const CATEGORY_PILLS = [
   { value: "CONTRACTED", label: WORKER_CATEGORY_LABELS.CONTRACTED },
 ] as const;
 
-export function ApplicantsToolbar() {
+export function ApplicantsToolbar({ nationalities }: { nationalities: string[] }) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -83,6 +83,40 @@ export function ApplicantsToolbar() {
             {Object.entries(STATUS_LABEL).map(([value, label]) => (
               <SelectItem key={value} value={value}>
                 {label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <Select
+          value={searchParams.get("experience") ?? "ALL"}
+          onValueChange={(v) => setParam("experience", v === "ALL" || !v ? "" : v)}
+        >
+          <SelectTrigger className="w-44">
+            <SelectValue placeholder="All experience" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="ALL">All experience</SelectItem>
+            {Object.entries(EXPERIENCE_TYPE_LABELS).map(([value, label]) => (
+              <SelectItem key={value} value={value}>
+                {label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <Select
+          value={searchParams.get("nationality") ?? "ALL"}
+          onValueChange={(v) => setParam("nationality", v === "ALL" || !v ? "" : v)}
+        >
+          <SelectTrigger className="w-44">
+            <SelectValue placeholder="All nationalities" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="ALL">All nationalities</SelectItem>
+            {nationalities.map((n) => (
+              <SelectItem key={n} value={n}>
+                {n}
               </SelectItem>
             ))}
           </SelectContent>

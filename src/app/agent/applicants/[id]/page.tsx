@@ -5,6 +5,7 @@ import { getAgentApplicant } from "@/lib/agent-applicant-view";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ApplicantStatusBadge } from "@/app/admin/applicants/applicant-status-badge";
 import { DownloadCvButton } from "../download-cv-button";
+import { PdfPreviewDialog, PdfPreviewTriggerButton } from "@/components/pdf-preview-dialog";
 import { UserRound } from "lucide-react";
 
 function Row({ label, value }: { label: string; value: React.ReactNode }) {
@@ -54,9 +55,17 @@ export default async function AgentApplicantDetailPage({
             {applicant.role} · {applicant.contract}
           </p>
         </div>
-        <DownloadCvButton applicantId={applicant.id} applicantName={applicant.name}>
-          Download CV
-        </DownloadCvButton>
+        <div className="flex gap-2">
+          <PdfPreviewDialog
+            pdfUrl={`/agent/applicants/${applicant.id}/cv`}
+            fileName={`${applicant.name || "candidate"}-cv.pdf`}
+            title={`CV — ${applicant.name || "Applicant"}`}
+            trigger={<PdfPreviewTriggerButton />}
+          />
+          <DownloadCvButton applicantId={applicant.id} applicantName={applicant.name}>
+            Download CV
+          </DownloadCvButton>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">

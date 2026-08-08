@@ -125,16 +125,29 @@ const SKILLS: [keyof AgentApplicantView, string][] = [
   ["skillDriving", "Driving"],
 ];
 
+// Confirmed passport/alteration-page documents are appended as extra PDF
+// pages once the candidate is marked confirmed (Phase 1 §7 rule 5, legacy
+// agent.html downloadCV()). Only image documents (jpeg/png) can be
+// embedded this way — react-pdf's <Image> renders raster images, not
+// arbitrary PDFs; a document uploaded as a PDF is skipped here and stays
+// downloadable on its own from the applicant detail page instead.
+const imagePageStyles = StyleSheet.create({
+  page: { padding: 0 },
+  image: { width: "100%", height: "100%", objectFit: "contain" },
+});
+
 export function CvDocument({
   applicant,
   agencyLogoUrl,
   agencyName,
   footerLines,
+  extraImagePages = [],
 }: {
   applicant: AgentApplicantView;
   agencyLogoUrl: string | null;
   agencyName: string | null;
   footerLines: string[];
+  extraImagePages?: string[];
 }) {
   const personalRows: [string, string][] = [
     ["Nationality", applicant.nationality ?? ""],
@@ -288,6 +301,13 @@ export function CvDocument({
           </View>
         )}
       </Page>
+
+      {extraImagePages.map((src) => (
+        <Page key={src} size="A4" style={imagePageStyles.page}>
+          {/* eslint-disable-next-line jsx-a11y/alt-text */}
+          <Image src={src} style={imagePageStyles.image} />
+        </Page>
+      ))}
     </Document>
   );
 }

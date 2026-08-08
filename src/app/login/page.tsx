@@ -50,11 +50,17 @@ export default async function LoginPage({
                 <TabsTrigger value="admin">Staff</TabsTrigger>
                 <TabsTrigger value="agent">Agent</TabsTrigger>
               </TabsList>
-              <TabsContent value="admin" className="mt-6">
+              <TabsContent value="admin" className="mt-6 flex flex-col gap-4">
                 <AdminLoginForm action={adminLoginAction} />
+                <p className="text-center text-xs text-muted-foreground">
+                  Forgot your password? Ask an owner to reset it from Settings → Team.
+                </p>
               </TabsContent>
-              <TabsContent value="agent" className="mt-6">
+              <TabsContent value="agent" className="mt-6 flex flex-col gap-4">
                 <AgentLoginForm action={agentLoginAction} />
+                <p className="text-center text-xs text-muted-foreground">
+                  Forgot your password? Contact Topway to have it reset.
+                </p>
               </TabsContent>
             </Tabs>
           </CardContent>

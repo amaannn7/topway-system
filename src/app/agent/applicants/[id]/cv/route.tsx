@@ -35,6 +35,14 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
   const footerLines = [org?.defaultFooterLine1, org?.defaultFooterLine2, org?.defaultFooterLine3]
     .filter((line): line is string => !!line);
 
+  // documents is already confirmed-gated by getAgentApplicant() (empty
+  // array unless applicant.confirmed === true) — only image documents can
+  // be embedded as extra PDF pages, see the note in lib/cv-pdf.tsx.
+  const extraImagePages = applicant.documents
+    .filter((d) => d.mimeType === "image/jpeg" || d.mimeType === "image/png")
+    .map((d) => toLocalPath(d.url))
+    .filter((p): p is string => !!p);
+
   const pdfBuffer = await renderToBuffer(
     <CvDocument
       applicant={{
@@ -45,6 +53,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
       agencyLogoUrl={toLocalPath(agent?.logoUrl ?? null)}
       agencyName={agent?.company ?? null}
       footerLines={footerLines}
+      extraImagePages={extraImagePages}
     />
   );
 

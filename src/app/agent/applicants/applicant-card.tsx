@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { ApplicantStatusBadge } from "@/app/admin/applicants/applicant-status-badge";
 import type { AgentApplicantView } from "@/lib/agent-applicant-view";
 import { DownloadCvButton } from "./download-cv-button";
+import { PdfPreviewDialog, PdfPreviewTriggerButton } from "@/components/pdf-preview-dialog";
 
 export function ApplicantCard({ applicant }: { applicant: AgentApplicantView }) {
   const done = applicant.pipelineSteps.filter((s) => s.completed).length;
@@ -42,10 +43,16 @@ export function ApplicantCard({ applicant }: { applicant: AgentApplicantView }) 
           </div>
         </div>
       </Link>
-      <div className="border-t p-3">
+      <div className="flex gap-2 border-t p-3">
+        <PdfPreviewDialog
+          pdfUrl={`/agent/applicants/${applicant.id}/cv`}
+          fileName={`${applicant.name || "candidate"}-cv.pdf`}
+          title={`CV — ${applicant.name || "Applicant"}`}
+          trigger={<PdfPreviewTriggerButton />}
+        />
         <DownloadCvButton applicantId={applicant.id} applicantName={applicant.name}>
           <Download className="size-4" />
-          Download CV
+          Download
         </DownloadCvButton>
       </div>
     </Card>

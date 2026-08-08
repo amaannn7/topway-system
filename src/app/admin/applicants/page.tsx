@@ -1,43 +1,79 @@
-import Link from "next/link";
-import Image from "next/image";
 import { prisma } from "@/lib/prisma";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { deriveStatus, STATUS_LABEL, type DerivedStatus } from "@/lib/pipeline-status";
-import { ApplicantStatusBadge } from "./applicant-status-badge";
+import { deriveStatus, delaySeverity } from "@/lib/pipeline-status";
+import { EXPERIENCE_TYPE_LABELS } from "@/lib/constants/applicant";
 import { ApplicantsToolbar } from "./applicants-toolbar";
-import { UserRound } from "lucide-react";
+import { ApplicantsTable, type ApplicantRow } from "./applicants-table";
 import type { Prisma } from "@/generated/prisma/client";
 
 export default async function AdminApplicantsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; status?: string; category?: string }>;
+  searchParams: Promise<{ q?: string; status?: string; category?: string; experience?: string; nationality?: string }>;
 }) {
-  const { q, status, category } = await searchParams;
+  const { q, status, category, experience, nationality } = await searchParams;
 
   const where: Prisma.ApplicantWhereInput = {
     ...(q ? { name: { contains: q, mode: "insensitive" } } : {}),
     ...(category ? { workerCategory: category as never } : {}),
+    ...(experience ? { experienceType: experience as never } : {}),
+    ...(nationality ? { nationality } : {}),
   };
 
-  const applicants = await prisma.applicant.findMany({
-    where,
-    orderBy: { createdAt: "desc" },
-    include: {
-      pipelineSteps: { select: { completed: true } },
-      photos: { where: { kind: "HEADSHOT" }, select: { url: true }, take: 1 },
-    },
-  });
+  const [applicants, nationalitiesRaw] = await Promise.all([
+    prisma.applicant.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+      include: {
+        pipelineSteps: { select: { key: true, completed: true } },
+        photos: { where: { kind: "HEADSHOT" }, select: { url: true }, take: 1 },
+      },
+    }),
+    prisma.applicant.findMany({
+      where: { nationality: { not: null } },
+      distinct: ["nationality"],
+      select: { nationality: true },
+      orderBy: { nationality: "asc" },
+    }),
+  ]);
 
-  const withStatus = applicants
-    .map((a) => ({ ...a, status: deriveStatus(a) }))
+  const nationalities = nationalitiesRaw
+    .map((n) => n.nationality)
+    .filter((n): n is string => !!n);
+
+  const rows: ApplicantRow[] = applicants
+    .map((a) => {
+      const s = deriveStatus(a);
+      const { days, severity } = delaySeverity(a.musanedDate);
+      return {
+        id: a.id,
+        name: a.name,
+        role: a.role,
+        status: s,
+        headshotUrl: a.photos[0]?.url ?? null,
+        nationality: a.nationality,
+        religion: a.religion,
+        age: a.age,
+        heightCm: a.heightCm,
+        weightKg: a.weightKg,
+        maritalStatus: a.maritalStatus,
+        passportNo: a.passportNo,
+        passportIssuedAt: a.passportIssuedAt,
+        phone: a.phone,
+        whatsapp: a.whatsapp,
+        email: a.email,
+        emergencyContact: a.emergencyContact,
+        address: a.address,
+        notes: a.notes,
+        completedSteps: new Set(a.pipelineSteps.filter((s) => s.completed).map((s) => s.key)),
+        refNo: a.refNo,
+        experienceType: a.experienceType
+          ? EXPERIENCE_TYPE_LABELS[a.experienceType as keyof typeof EXPERIENCE_TYPE_LABELS]
+          : null,
+        doneSteps: a.pipelineSteps.filter((s) => s.completed).length,
+        delayDays: days,
+        delaySeverity: severity,
+      } satisfies ApplicantRow;
+    })
     .filter((a) => !status || a.status === status);
 
   return (
@@ -51,82 +87,9 @@ export default async function AdminApplicantsPage({
         </div>
       </div>
 
-      <ApplicantsToolbar />
+      <ApplicantsToolbar nationalities={nationalities} />
 
-      <div className="overflow-x-auto rounded-lg border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-12"></TableHead>
-              <TableHead>Name</TableHead>
-              <TableHead>Role</TableHead>
-              <TableHead>Nationality</TableHead>
-              <TableHead>Age</TableHead>
-              <TableHead>Steps</TableHead>
-              <TableHead>Status</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {withStatus.length === 0 && (
-              <TableRow>
-                <TableCell colSpan={7} className="py-12 text-center text-sm text-muted-foreground">
-                  {applicants.length === 0
-                    ? "No applicants yet. Create the first profile to get started."
-                    : "No applicants match the current filters."}
-                </TableCell>
-              </TableRow>
-            )}
-            {withStatus.map((a) => {
-              const done = a.pipelineSteps.filter((s) => s.completed).length;
-              return (
-                <TableRow key={a.id} className="cursor-pointer">
-                  <TableCell>
-                    {a.photos[0]?.url ? (
-                      <Image
-                        src={a.photos[0].url}
-                        alt=""
-                        width={32}
-                        height={40}
-                        className="h-10 w-8 rounded object-cover"
-                      />
-                    ) : (
-                      <div className="flex h-10 w-8 items-center justify-center rounded bg-muted text-muted-foreground">
-                        <UserRound className="size-4" />
-                      </div>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <Link
-                      href={`/admin/applicants/${a.id}`}
-                      className="font-medium hover:underline"
-                    >
-                      {a.name || "(Unnamed)"}
-                    </Link>
-                    {a.refNo && (
-                      <span className="ml-2 text-xs text-muted-foreground">
-                        Ref {a.refNo}
-                      </span>
-                    )}
-                  </TableCell>
-                  <TableCell className="text-muted-foreground">{a.role}</TableCell>
-                  <TableCell className="text-muted-foreground">
-                    {a.nationality || "—"}
-                  </TableCell>
-                  <TableCell className="text-muted-foreground tabular-nums">
-                    {a.age ?? "—"}
-                  </TableCell>
-                  <TableCell className="text-muted-foreground tabular-nums">
-                    {done}/6
-                  </TableCell>
-                  <TableCell>
-                    <ApplicantStatusBadge status={a.status as DerivedStatus} />
-                  </TableCell>
-                </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
-      </div>
+      <ApplicantsTable rows={rows} />
     </div>
   );
 }

@@ -64,7 +64,7 @@ export function PipelineForm({
   const [workerCategory, setWorkerCategory] = useState(applicant.workerCategory ?? "");
   const [experienceType, setExperienceType] = useState(applicant.experienceType ?? "");
   const [confirmed, setConfirmed] = useState(applicant.confirmed);
-  const [sent, setSent] = useState(applicant.pipelineStatus === "SENT");
+  const [pipelineStatus, setPipelineStatus] = useState(applicant.pipelineStatus);
   const [musanedDate, setMusanedDate] = useState(toDateInput(applicant.musanedDate));
   const [ticketDate, setTicketDate] = useState(toDateInput(applicant.ticketDate));
   const [saudiAgentVisaDate, setSaudiAgentVisaDate] = useState(
@@ -81,7 +81,7 @@ export function PipelineForm({
           workerCategory: workerCategory || null,
           experienceType: experienceType || null,
           confirmed,
-          pipelineStatus: sent ? "SENT" : "ACTIVE",
+          pipelineStatus,
           musanedDate,
           ticketDate,
           saudiAgentVisaDate,
@@ -150,21 +150,25 @@ export function PipelineForm({
                 Unlocks passport documents for the assigned agent.
               </p>
             </button>
-            <button
-              type="button"
-              onClick={() => setSent((v) => !v)}
-              className={cn(
-                "rounded-md border px-3 py-2 text-left text-sm font-medium transition-colors",
-                sent
-                  ? "border-secondary/50 bg-secondary/15 text-secondary-foreground"
-                  : "border-border text-muted-foreground hover:border-primary/40"
-              )}
+          </div>
+
+          <div className="mt-4">
+            <Label className="mb-1.5 text-xs text-muted-foreground uppercase">
+              Pipeline status
+            </Label>
+            <Select
+              value={pipelineStatus}
+              onValueChange={(v) => setPipelineStatus((v ?? "ACTIVE") as typeof pipelineStatus)}
             >
-              {sent ? "✓ Applicant sent" : "○ Mark as sent"}
-              <p className="text-xs font-normal opacity-80">
-                Removes this applicant from the agent browse pool.
-              </p>
-            </button>
+              <SelectTrigger className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ACTIVE">Active</SelectItem>
+                <SelectItem value="SENT">Sent — removes from agent browse pool</SelectItem>
+                <SelectItem value="CANCELLED">Cancelled</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </CardContent>
       </Card>
@@ -238,7 +242,7 @@ export function PipelineForm({
             <Label className="mb-1.5 text-xs text-muted-foreground uppercase">Notes</Label>
             <Textarea
               rows={3}
-              placeholder="e.g. CANCELLED, or any remarks…"
+              placeholder="Any remarks about this applicant's processing…"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
             />

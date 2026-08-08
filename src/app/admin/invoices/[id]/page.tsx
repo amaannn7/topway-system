@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Pencil, Download } from "lucide-react";
+import { PdfPreviewDialog, PdfPreviewTriggerButton } from "@/components/pdf-preview-dialog";
 
 function Row({ label, value }: { label: string; value: React.ReactNode }) {
   if (value === null || value === undefined || value === "") return null;
@@ -48,6 +49,12 @@ export default async function InvoiceDetailPage({
             <Pencil className="size-4" />
             Edit
           </Button>
+          <PdfPreviewDialog
+            pdfUrl={`/admin/invoices/${invoice.id}/pdf`}
+            fileName={`Invoice_${invoice.invoiceNo}.pdf`}
+            title={`Invoice #${invoice.invoiceNo}`}
+            trigger={<PdfPreviewTriggerButton />}
+          />
           <Button render={<a href={`/admin/invoices/${invoice.id}/pdf`} />}>
             <Download className="size-4" />
             Download PDF

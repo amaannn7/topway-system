@@ -11,9 +11,8 @@ export function DownloadCvButton({
 }) {
   return (
     <Button
-      variant="outline"
       size="sm"
-      className="w-full"
+      className="flex-1"
       render={
         <a
           href={`/agent/applicants/${applicantId}/cv`}

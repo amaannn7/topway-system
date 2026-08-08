@@ -2,8 +2,9 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Plus, Receipt, Eye, Download } from "lucide-react";
+import { Plus, Receipt, FileText, Download } from "lucide-react";
 import { DeleteInvoiceButton } from "./delete-invoice-button";
+import { PdfPreviewDialog } from "@/components/pdf-preview-dialog";
 
 function fmtDate(d: Date) {
   return new Intl.DateTimeFormat("en-US", { year: "numeric", month: "long", day: "numeric" }).format(d);
@@ -65,17 +66,20 @@ export default async function AdminInvoicesPage() {
                 <Button
                   variant="ghost"
                   size="icon"
-                  render={<Link href={`/admin/invoices/${inv.id}`} aria-label="View invoice" />}
+                  render={<Link href={`/admin/invoices/${inv.id}`} aria-label="View invoice details" />}
                 >
-                  <Eye className="size-4" />
+                  <FileText className="size-4" />
                 </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  render={<a href={`/admin/invoices/${inv.id}/pdf`} aria-label="Download PDF" />}
-                >
-                  <Download className="size-4" />
-                </Button>
+                <PdfPreviewDialog
+                  pdfUrl={`/admin/invoices/${inv.id}/pdf`}
+                  fileName={`Invoice_${inv.invoiceNo}.pdf`}
+                  title={`Invoice #${inv.invoiceNo}`}
+                  trigger={
+                    <Button variant="ghost" size="icon" aria-label="Preview PDF">
+                      <Download className="size-4" />
+                    </Button>
+                  }
+                />
                 <DeleteInvoiceButton invoiceId={inv.id} invoiceNo={inv.invoiceNo} />
               </div>
             </Card>
