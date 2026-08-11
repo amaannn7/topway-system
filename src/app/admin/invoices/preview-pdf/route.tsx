@@ -1,15 +1,10 @@
 import { NextResponse } from "next/server";
-import path from "node:path";
 import { renderToBuffer } from "@react-pdf/renderer";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/require-session";
 import { invoiceFormSchema } from "@/lib/validations/invoice";
 import { InvoiceDocument } from "@/lib/invoice-pdf";
-
-function toLocalPath(url: string | null | undefined): string | null {
-  if (!url || !url.startsWith("/uploads/")) return null;
-  return path.join(process.cwd(), "public", url);
-}
+import { uploadPathToPdfSrc } from "@/lib/pdf-assets";
 
 // Renders a PDF from unsaved form values — matches the legacy invoice.html
 // previewFromForm() behavior (preview before the first save). Nothing is
@@ -32,7 +27,7 @@ export async function POST(req: Request) {
 
   const previewInvoice = {
     id: "preview",
-    invoiceNo: values.invoiceNo || "—",
+    invoiceNo: values.invoiceNo || "–",
     invoicedDate: new Date(`${values.invoicedDate}T00:00:00.000Z`),
     currency: values.currency,
     agentId: values.agentId ?? null,
@@ -73,7 +68,7 @@ export async function POST(req: Request) {
       // @ts-expect-error — plain numbers stand in for Prisma.Decimal here;
       // InvoiceDocument only ever calls Number(...) on these fields.
       invoice={previewInvoice}
-      logoUrl={toLocalPath(settings?.headerLogoUrl)}
+      logoUrl={uploadPathToPdfSrc(settings?.headerLogoUrl)}
     />
   );
 

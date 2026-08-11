@@ -25,7 +25,9 @@ export default async function AdminLayout({
           name={session?.user?.name ?? "Admin"}
           role={session?.user?.adminRole ?? "STAFF"}
         />
-        <main className="flex-1 overflow-y-auto p-6">{children}</main>
+        <main className="flex-1 overflow-y-auto p-6">
+          <div className="mx-auto w-full max-w-6xl">{children}</div>
+        </main>
       </SidebarInset>
     </SidebarProvider>
   );

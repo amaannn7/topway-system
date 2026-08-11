@@ -27,7 +27,10 @@ import {
   PIPELINE_STEPS,
   WORKER_CATEGORY_LABELS,
   EXPERIENCE_TYPE_LABELS,
+  EMPLOYMENT_COUNTRY_OPTIONS,
 } from "@/lib/constants/applicant";
+import { deriveLifecycleStatus, LIFECYCLE_STATUS_LABEL } from "@/lib/pipeline-status";
+import { LifecycleStatusBadge } from "../../lifecycle-status-badge";
 import { updatePipeline } from "../../actions";
 
 type StepKey = (typeof PIPELINE_STEPS)[number]["key"];
@@ -48,6 +51,8 @@ export function PipelineForm({
     musanedDate: Date | null;
     ticketDate: Date | null;
     saudiAgentVisaDate: Date | null;
+    departureDate: Date | null;
+    destinationCountry: string | null;
     notes: string | null;
     pipelineSteps: { key: StepKey; completed: boolean }[];
   };
@@ -70,7 +75,16 @@ export function PipelineForm({
   const [saudiAgentVisaDate, setSaudiAgentVisaDate] = useState(
     toDateInput(applicant.saudiAgentVisaDate)
   );
+  const [departureDate, setDepartureDate] = useState(toDateInput(applicant.departureDate));
+  const [destinationCountry, setDestinationCountry] = useState(
+    applicant.destinationCountry ?? ""
+  );
   const [notes, setNotes] = useState(applicant.notes ?? "");
+
+  const lifecyclePreview = deriveLifecycleStatus({
+    departureDate: departureDate ? new Date(`${departureDate}T00:00:00.000Z`) : null,
+    destinationCountry: destinationCountry || null,
+  });
 
   function save() {
     startTransition(async () => {
@@ -85,6 +99,8 @@ export function PipelineForm({
           musanedDate,
           ticketDate,
           saudiAgentVisaDate,
+          departureDate,
+          destinationCountry,
           notes,
         });
         toast.success("Pipeline updated");
@@ -165,7 +181,7 @@ export function PipelineForm({
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="ACTIVE">Active</SelectItem>
-                <SelectItem value="SENT">Sent — removes from agent browse pool</SelectItem>
+                <SelectItem value="SENT">Sent (removes from agent browse pool)</SelectItem>
                 <SelectItem value="CANCELLED">Cancelled</SelectItem>
               </SelectContent>
             </Select>
@@ -238,6 +254,56 @@ export function PipelineForm({
               />
             </div>
           </div>
+
+          <div className="rounded-lg border bg-muted/30 p-3">
+            <div className="mb-2 flex items-center justify-between">
+              <Label className="text-xs text-muted-foreground uppercase">Post-departure lifecycle</Label>
+              <LifecycleStatusBadge status={lifecyclePreview.status} />
+            </div>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <div>
+                <Label className="mb-1.5 text-xs text-muted-foreground uppercase">Departure date</Label>
+                <Input
+                  type="date"
+                  value={departureDate}
+                  onChange={(e) => setDepartureDate(e.target.value)}
+                />
+              </div>
+              <div>
+                <Label className="mb-1.5 text-xs text-muted-foreground uppercase">
+                  Destination country
+                </Label>
+                <Select
+                  value={destinationCountry || null}
+                  onValueChange={(v) => setDestinationCountry(v ?? "")}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Not set" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {EMPLOYMENT_COUNTRY_OPTIONS.map((c) => (
+                      <SelectItem key={c} value={c}>
+                        {c}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            {lifecyclePreview.status !== "NOT_DEPARTED" && (
+              <p className="mt-2 text-xs text-muted-foreground">
+                {lifecyclePreview.status === "PROBATION_PROGRESS" &&
+                  `Probation ends ${lifecyclePreview.probationEndsAt?.toLocaleDateString("en-GB")}.`}
+                {lifecyclePreview.status === "PROBATION_COMPLETE" &&
+                  `Mid-contract mark on ${lifecyclePreview.midContractAt?.toLocaleDateString("en-GB")}.`}
+                {lifecyclePreview.status === "MID_CONTRACT" &&
+                  `Contract completes ${lifecyclePreview.contractEndsAt?.toLocaleDateString("en-GB")}.`}
+                {lifecyclePreview.status === "CONTRACT_COMPLETE" &&
+                  `Eligible for remarketing/reprocessing (${LIFECYCLE_STATUS_LABEL.CONTRACT_COMPLETE}).`}
+              </p>
+            )}
+          </div>
+
           <div>
             <Label className="mb-1.5 text-xs text-muted-foreground uppercase">Notes</Label>
             <Textarea

@@ -1,7 +1,11 @@
 "use server";
 
-import { signOut } from "@/lib/auth";
+import { auth, signOut } from "@/lib/auth";
 
 export async function signOutAction() {
-  await signOut({ redirectTo: "/login" });
+  const session = await auth();
+  const portal = session?.user?.portal;
+  const redirectTo =
+    portal === "agent" ? "/login/agent" : portal === "customer" ? "/login/customer" : "/login";
+  await signOut({ redirectTo });
 }

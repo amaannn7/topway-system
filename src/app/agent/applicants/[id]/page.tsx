@@ -2,11 +2,14 @@ import { notFound } from "next/navigation";
 import Image from "next/image";
 import { auth } from "@/lib/auth";
 import { getAgentApplicant } from "@/lib/agent-applicant-view";
+import { deriveLifecycleStatus } from "@/lib/pipeline-status";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ApplicantStatusBadge } from "@/app/admin/applicants/applicant-status-badge";
+import { LifecycleStatusBadge } from "@/app/admin/applicants/lifecycle-status-badge";
 import { DownloadCvButton } from "../download-cv-button";
-import { PdfPreviewDialog, PdfPreviewTriggerButton } from "@/components/pdf-preview-dialog";
+import { PdfPreviewDialog } from "@/components/pdf-preview-dialog";
 import { UserRound } from "lucide-react";
+import { DisputeReportForm } from "./dispute-report-form";
 
 function Row({ label, value }: { label: string; value: React.ReactNode }) {
   if (value === null || value === undefined || value === "") return null;
@@ -33,6 +36,8 @@ export default async function AgentApplicantDetailPage({
   const applicant = await getAgentApplicant(session!.user.id, id);
   if (!applicant) notFound();
 
+  const lifecycle = deriveLifecycleStatus(applicant);
+
   const skills = [
     ["Cleaning", applicant.skillCleaning],
     ["Washing", applicant.skillWashing],
@@ -50,6 +55,9 @@ export default async function AgentApplicantDetailPage({
               {applicant.name || "(Unnamed)"}
             </h1>
             <ApplicantStatusBadge status={applicant.status} />
+            {lifecycle.status !== "NOT_DEPARTED" && (
+              <LifecycleStatusBadge status={lifecycle.status} />
+            )}
           </div>
           <p className="text-sm text-muted-foreground">
             {applicant.role} · {applicant.contract}
@@ -59,8 +67,7 @@ export default async function AgentApplicantDetailPage({
           <PdfPreviewDialog
             pdfUrl={`/agent/applicants/${applicant.id}/cv`}
             fileName={`${applicant.name || "candidate"}-cv.pdf`}
-            title={`CV — ${applicant.name || "Applicant"}`}
-            trigger={<PdfPreviewTriggerButton />}
+            title={`${applicant.name || "Applicant"} CV`}
           />
           <DownloadCvButton applicantId={applicant.id} applicantName={applicant.name}>
             Download CV
@@ -142,6 +149,8 @@ export default async function AgentApplicantDetailPage({
               </CardContent>
             </Card>
           )}
+
+          <DisputeReportForm applicantId={applicant.id} />
         </div>
       </div>
     </div>

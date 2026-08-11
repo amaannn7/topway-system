@@ -1,14 +1,9 @@
 import { NextResponse } from "next/server";
-import path from "node:path";
 import { renderToBuffer } from "@react-pdf/renderer";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/require-session";
 import { InvoiceDocument } from "@/lib/invoice-pdf";
-
-function toLocalPath(url: string | null | undefined): string | null {
-  if (!url || !url.startsWith("/uploads/")) return null;
-  return path.join(process.cwd(), "public", url);
-}
+import { uploadPathToPdfSrc } from "@/lib/pdf-assets";
 
 export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -30,7 +25,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
   }
 
   const pdfBuffer = await renderToBuffer(
-    <InvoiceDocument invoice={invoice} logoUrl={toLocalPath(settings?.headerLogoUrl)} />
+    <InvoiceDocument invoice={invoice} logoUrl={uploadPathToPdfSrc(settings?.headerLogoUrl)} />
   );
 
   const safeCompany = invoice.billToCompany.replace(/[^a-z0-9]+/gi, "_");

@@ -8,6 +8,7 @@ import { UserRound } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { EXPERIENCE_TYPE_LABELS } from "@/lib/constants/applicant";
+import { cn } from "@/lib/utils";
 import { toggleRequest } from "./actions";
 
 type BrowseStatus = "available" | "requested" | "assigned";
@@ -42,7 +43,12 @@ export function BrowseCard({
   }
 
   return (
-    <Card className="flex flex-col overflow-hidden">
+    <Card
+      className={cn(
+        "flex flex-col overflow-hidden shadow-sm transition-shadow hover:shadow-md",
+        applicant.status === "requested" && "border-l-4 border-l-info"
+      )}
+    >
       <div className="flex h-32 items-center justify-center bg-muted">
         {applicant.headshotUrl ? (
           <Image
@@ -69,7 +75,10 @@ export function BrowseCard({
       <div className="border-t p-2.5">
         <Button
           size="sm"
-          className="w-full"
+          className={cn(
+            "w-full rounded-full",
+            applicant.status === "assigned" && "bg-success/15 text-success hover:bg-success/15"
+          )}
           disabled={pending || applicant.status === "assigned"}
           variant={applicant.status === "available" ? "default" : "outline"}
           onClick={handleClick}
@@ -77,7 +86,7 @@ export function BrowseCard({
           {applicant.status === "assigned"
             ? "✓ Assigned"
             : applicant.status === "requested"
-              ? "Requested — cancel"
+              ? "Requested (cancel)"
               : "Request"}
         </Button>
       </div>

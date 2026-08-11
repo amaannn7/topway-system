@@ -32,7 +32,7 @@ export function DocumentsPanel({
         />
         <UploadSlot
           label="Headshot"
-          hint="Auto-derived — upload full photo to update"
+          hint="Auto-derived; upload full photo to update"
           currentUrl={headshotUrl}
           accept="image/png,image/jpeg,image/webp"
           aspectClassName="aspect-[3/4] h-56 w-44"

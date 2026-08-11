@@ -29,3 +29,26 @@ export async function requireOwner() {
   }
   return user;
 }
+
+export async function requireCustomer() {
+  const session = await auth();
+  if (session?.user?.portal !== "customer") {
+    throw new Error("Unauthorized");
+  }
+  return session.user;
+}
+
+// Payment figures (invoice totals, advances, bank details) are hidden from
+// staff by default — OWNER always implicitly has access, STAFF only if
+// explicitly granted via AdminUser.canViewPayments (Settings > Team).
+export function canViewPayments(user: { adminRole?: "OWNER" | "STAFF"; canViewPayments?: boolean }) {
+  return user.adminRole === "OWNER" || !!user.canViewPayments;
+}
+
+export async function requirePaymentAccess() {
+  const user = await requireAdmin();
+  if (!canViewPayments(user)) {
+    throw new Error("You don't have access to payment information");
+  }
+  return user;
+}

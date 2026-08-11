@@ -188,6 +188,8 @@ export async function updatePipeline(raw: unknown) {
         saudiAgentVisaDate: values.saudiAgentVisaDate
           ? toDate(values.saudiAgentVisaDate)
           : undefined,
+        departureDate: values.departureDate ? toDate(values.departureDate) : undefined,
+        destinationCountry: values.destinationCountry || null,
         notes: values.notes,
       },
     }),

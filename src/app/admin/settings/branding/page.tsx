@@ -12,7 +12,7 @@ export default async function BrandingSettingsPage() {
         <CardHeader>
           <CardTitle className="text-sm">Shared logo</CardTitle>
           <CardDescription>
-            Used on applicant PDFs when no specific agent logo applies — replaces the old
+            Used on applicant PDFs when no specific agent logo applies. Replaces the old
             trick of storing this as a fake applicant record.
           </CardDescription>
         </CardHeader>

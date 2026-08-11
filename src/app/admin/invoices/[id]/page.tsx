@@ -4,7 +4,10 @@ import { prisma } from "@/lib/prisma";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Pencil, Download } from "lucide-react";
-import { PdfPreviewDialog, PdfPreviewTriggerButton } from "@/components/pdf-preview-dialog";
+import { PdfPreviewDialog } from "@/components/pdf-preview-dialog";
+import { auth } from "@/lib/auth";
+import { canViewPayments } from "@/lib/require-session";
+import { MaskedAmount } from "../masked-amount";
 
 function Row({ label, value }: { label: string; value: React.ReactNode }) {
   if (value === null || value === undefined || value === "") return null;
@@ -29,11 +32,16 @@ export default async function InvoiceDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const invoice = await prisma.invoice.findUnique({
-    where: { id },
-    include: { workers: { orderBy: { sortOrder: "asc" } } },
-  });
+  const [invoice, session] = await Promise.all([
+    prisma.invoice.findUnique({
+      where: { id },
+      include: { workers: { orderBy: { sortOrder: "asc" } } },
+    }),
+    auth(),
+  ]);
   if (!invoice) notFound();
+
+  const canSeePayments = !!session?.user && canViewPayments(session.user);
 
   return (
     <div className="flex flex-col gap-4">
@@ -45,15 +53,17 @@ export default async function InvoiceDetailPage({
           </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" render={<Link href={`/admin/invoices/${invoice.id}/edit`} />}>
-            <Pencil className="size-4" />
-            Edit
-          </Button>
+          {canSeePayments && (
+            <Button variant="outline" render={<Link href={`/admin/invoices/${invoice.id}/edit`} />}>
+              <Pencil className="size-4" />
+              Edit
+            </Button>
+          )}
           <PdfPreviewDialog
             pdfUrl={`/admin/invoices/${invoice.id}/pdf`}
             fileName={`Invoice_${invoice.invoiceNo}.pdf`}
             title={`Invoice #${invoice.invoiceNo}`}
-            trigger={<PdfPreviewTriggerButton />}
+            triggerSize="default"
           />
           <Button render={<a href={`/admin/invoices/${invoice.id}/pdf`} />}>
             <Download className="size-4" />
@@ -82,10 +92,18 @@ export default async function InvoiceDetailPage({
             <CardTitle className="text-sm">Bank details</CardTitle>
           </CardHeader>
           <CardContent>
-            <Row label="Bank name" value={invoice.bankName} />
-            <Row label="Account number" value={invoice.accountNo} />
-            <Row label="Account name" value={invoice.accountName} />
-            <Row label="SWIFT code" value={invoice.swiftCode} />
+            {canSeePayments ? (
+              <>
+                <Row label="Bank name" value={invoice.bankName} />
+                <Row label="Account number" value={invoice.accountNo} />
+                <Row label="Account name" value={invoice.accountName} />
+                <Row label="SWIFT code" value={invoice.swiftCode} />
+              </>
+            ) : (
+              <p className="py-2 text-sm text-muted-foreground">
+                <MaskedAmount />. You don&apos;t have access to payment details.
+              </p>
+            )}
           </CardContent>
         </Card>
       </div>
@@ -101,7 +119,7 @@ export default async function InvoiceDetailPage({
                 {w.name} × {w.qty}
               </span>
               <span className="tabular-nums">
-                {invoice.currency} {fmtAmount(Number(w.amount))}
+                {canSeePayments ? `${invoice.currency} ${fmtAmount(Number(w.amount))}` : <MaskedAmount />}
               </span>
             </div>
           ))}
@@ -109,14 +127,14 @@ export default async function InvoiceDetailPage({
             <div className="flex justify-between border-t pt-1 text-sm text-muted-foreground">
               <span>Advance ({invoice.advanceStatus.toLowerCase()})</span>
               <span className="tabular-nums">
-                {invoice.currency} {fmtAmount(Number(invoice.advanceAmount))}
+                {canSeePayments ? `${invoice.currency} ${fmtAmount(Number(invoice.advanceAmount))}` : <MaskedAmount />}
               </span>
             </div>
           )}
           <div className="flex justify-between border-t pt-2 text-sm font-semibold">
             <span>Total</span>
             <span className="tabular-nums">
-              {invoice.currency} {fmtAmount(Number(invoice.total))}
+              {canSeePayments ? `${invoice.currency} ${fmtAmount(Number(invoice.total))}` : <MaskedAmount />}
             </span>
           </div>
         </CardContent>

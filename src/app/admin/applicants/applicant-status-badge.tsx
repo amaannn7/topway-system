@@ -4,10 +4,10 @@ import { cn } from "@/lib/utils";
 
 const STATUS_STYLES: Record<DerivedStatus, string> = {
   READY: "bg-success/15 text-success border-success/30",
-  COMPLETE: "bg-primary/10 text-primary border-primary/25",
+  COMPLETE: "bg-info/10 text-info border-info/25",
   PROGRESS: "bg-warning/15 text-warning-foreground border-warning/30",
   PENDING: "bg-muted text-muted-foreground border-transparent",
-  SENT: "bg-secondary/20 text-secondary-foreground border-secondary/30",
+  SENT: "bg-secondary text-white border-transparent dark:bg-secondary dark:text-white",
   CANCELLED: "bg-destructive/10 text-destructive border-destructive/25",
 };
 

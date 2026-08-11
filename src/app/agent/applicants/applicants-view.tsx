@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { useTransition } from "react";
 import Link from "next/link";
-import { Search, LayoutGrid, List, Users, UserRound } from "lucide-react";
+import { Search, LayoutGrid, List, Users, UserRound, Check } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -13,9 +13,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 import { STATUS_LABEL, delaySeverity, type DerivedStatus, type DelaySeverity } from "@/lib/pipeline-status";
-import { EXPERIENCE_TYPE_LABELS } from "@/lib/constants/applicant";
+import { EXPERIENCE_TYPE_LABELS, PIPELINE_STEPS } from "@/lib/constants/applicant";
 import { ApplicantStatusBadge } from "@/app/admin/applicants/applicant-status-badge";
 import { ApplicantCard } from "./applicant-card";
 import type { AgentApplicantView } from "@/lib/agent-applicant-view";
@@ -26,6 +34,11 @@ const DELAY_STYLES: Record<DelaySeverity, string> = {
   late: "bg-destructive/10 text-destructive",
   none: "bg-muted text-muted-foreground",
 };
+
+function fmtShortDate(d: Date | string | null) {
+  if (!d) return "–";
+  return new Intl.DateTimeFormat("en-GB", { day: "2-digit", month: "short" }).format(new Date(d));
+}
 
 export function ApplicantsView({ applicants }: { applicants: AgentApplicantView[] }) {
   const router = useRouter();
@@ -143,78 +156,111 @@ export function ApplicantsView({ applicants }: { applicants: AgentApplicantView[
           ))}
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-lg border">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b bg-muted/40 text-xs text-muted-foreground uppercase">
-                <th className="w-10 py-2 pl-3 text-left"></th>
-                <th className="py-2 pr-3 text-left">Name</th>
-                <th className="py-2 pr-3 text-left">Role</th>
-                <th className="py-2 pr-3 text-left">Age</th>
-                <th className="py-2 pr-3 text-left">Experience</th>
-                <th className="py-2 pr-3 text-left">Musaned</th>
-                <th className="py-2 pr-3 text-left">Delay</th>
-                <th className="py-2 pr-3 text-left">Notes</th>
-                <th className="py-2 pr-3 text-left">Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.map((a) => {
-                const { days, severity } = delaySeverity(a.musanedDate);
-                return (
-                  <tr key={a.id} className="border-b last:border-0 hover:bg-accent/40">
-                    <td className="py-2 pl-3">
-                      <Link href={`/agent/applicants/${a.id}`}>
+        <div className="overflow-hidden rounded-xl border bg-card shadow-sm">
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow className="border-b-2 border-b-purple/15 bg-purple/5 hover:bg-purple/5 [&_th]:h-11 [&_th]:text-[0.7rem] [&_th]:font-semibold [&_th]:tracking-wide [&_th]:text-muted-foreground [&_th]:uppercase">
+                  <TableHead className="w-[62px] pl-5"></TableHead>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Role</TableHead>
+                  <TableHead>Experience</TableHead>
+                  <TableHead>Musaned</TableHead>
+                  <TableHead>Delay</TableHead>
+                  {PIPELINE_STEPS.map((step) => (
+                    <TableHead key={step.key} className="w-11 text-center" title={step.label}>
+                      {step.label.slice(0, 3)}
+                    </TableHead>
+                  ))}
+                  <TableHead>Ticket</TableHead>
+                  <TableHead className="pr-5">Saudi Visa</TableHead>
+                  <TableHead className="pr-5">Status</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody className="[&_tr:nth-child(even)]:bg-muted/25">
+                {filtered.map((a) => {
+                  const { days, severity } = delaySeverity(a.musanedDate);
+                  const completedSteps = new Set(
+                    a.pipelineSteps.filter((s) => s.completed).map((s) => s.key)
+                  );
+                  return (
+                    <TableRow
+                      key={a.id}
+                      className="cursor-pointer border-b-border/60 [&>td]:py-3"
+                      onClick={() => router.push(`/agent/applicants/${a.id}`)}
+                    >
+                      <TableCell className="pl-5">
                         {a.headshotUrl ? (
                           // eslint-disable-next-line @next/next/no-img-element -- small table thumbnail, not worth next/image overhead
                           <img
                             src={a.headshotUrl}
                             alt=""
-                            className="h-8 w-6 rounded object-cover"
+                            className="size-10 rounded-full object-cover ring-2 ring-background shadow-sm outline outline-border/60"
                           />
                         ) : (
-                          <div className="flex h-8 w-6 items-center justify-center rounded bg-muted text-muted-foreground">
-                            <UserRound className="size-3" />
+                          <div className="flex size-10 items-center justify-center rounded-full bg-purple/10 text-purple ring-2 ring-background outline outline-border/60">
+                            <UserRound className="size-4" />
                           </div>
                         )}
-                      </Link>
-                    </td>
-                    <td className="py-2 pr-3">
-                      <Link href={`/agent/applicants/${a.id}`} className="font-medium hover:underline">
-                        {a.name || "(Unnamed)"}
-                      </Link>
-                    </td>
-                    <td className="py-2 pr-3 text-muted-foreground">{a.role}</td>
-                    <td className="py-2 pr-3 text-muted-foreground tabular-nums">{a.age ?? "—"}</td>
-                    <td className="py-2 pr-3 text-muted-foreground">
-                      {a.experienceType
-                        ? EXPERIENCE_TYPE_LABELS[a.experienceType as keyof typeof EXPERIENCE_TYPE_LABELS]
-                        : "—"}
-                    </td>
-                    <td className="py-2 pr-3 text-muted-foreground text-xs whitespace-nowrap">
-                      {days !== null ? `${days}d ago` : "—"}
-                    </td>
-                    <td className="py-2 pr-3">
-                      <span
-                        className={cn(
-                          "rounded-full px-2 py-0.5 text-xs font-medium tabular-nums",
-                          DELAY_STYLES[severity]
-                        )}
-                      >
-                        {days !== null ? `${days}d` : "—"}
-                      </span>
-                    </td>
-                    <td className="max-w-40 truncate py-2 pr-3 text-xs text-muted-foreground">
-                      {a.notes || ""}
-                    </td>
-                    <td className="py-2 pr-3">
-                      <ApplicantStatusBadge status={a.status as DerivedStatus} />
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex flex-col gap-0.5">
+                          <span className="font-semibold text-foreground">{a.name || "(Unnamed)"}</span>
+                          <span className="text-xs text-muted-foreground">
+                            {a.refNo ? `Ref ${a.refNo}` : "No reference"}
+                          </span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">{a.role}</TableCell>
+                      <TableCell className="text-muted-foreground">
+                        {a.experienceType
+                          ? EXPERIENCE_TYPE_LABELS[a.experienceType as keyof typeof EXPERIENCE_TYPE_LABELS]
+                          : "–"}
+                      </TableCell>
+                      <TableCell className="text-muted-foreground text-xs whitespace-nowrap">
+                        {days !== null ? `${days}d ago` : "–"}
+                      </TableCell>
+                      <TableCell>
+                        <span
+                          className={cn(
+                            "inline-flex min-w-11 justify-center rounded-full px-2.5 py-1 text-xs font-semibold tabular-nums",
+                            DELAY_STYLES[severity]
+                          )}
+                        >
+                          {days !== null ? `${days}d` : "–"}
+                        </span>
+                      </TableCell>
+                      {PIPELINE_STEPS.map((step) => {
+                        const done = completedSteps.has(step.key);
+                        return (
+                          <TableCell key={step.key} className="text-center" title={step.label}>
+                            {done ? (
+                              <span className="inline-flex size-5.5 items-center justify-center rounded-full bg-success/15 text-success">
+                                <Check className="size-3" />
+                              </span>
+                            ) : (
+                              <span className="inline-flex size-5.5 items-center justify-center rounded-full bg-muted/70 text-muted-foreground/40">
+                                <span className="size-1 rounded-full bg-current" />
+                              </span>
+                            )}
+                          </TableCell>
+                        );
+                      })}
+                      <TableCell className="text-muted-foreground text-xs whitespace-nowrap">
+                        {fmtShortDate(a.ticketDate)}
+                      </TableCell>
+                      <TableCell className="pr-5 text-muted-foreground text-xs whitespace-nowrap">
+                        {fmtShortDate(a.saudiAgentVisaDate)}
+                      </TableCell>
+                      <TableCell className="pr-5">
+                        <ApplicantStatusBadge status={a.status as DerivedStatus} />
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </div>
         </div>
       )}
     </div>

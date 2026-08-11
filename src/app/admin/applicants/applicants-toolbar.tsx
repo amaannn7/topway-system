@@ -2,9 +2,8 @@
 
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { useTransition } from "react";
-import { Search, Plus } from "lucide-react";
+import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
@@ -13,7 +12,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import Link from "next/link";
 import { STATUS_LABEL } from "@/lib/pipeline-status";
 import { WORKER_CATEGORY_LABELS, EXPERIENCE_TYPE_LABELS } from "@/lib/constants/applicant";
 
@@ -42,14 +40,14 @@ export function ApplicantsToolbar({ nationalities }: { nationalities: string[] }
   const activeCategory = searchParams.get("category") ?? "";
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-4 rounded-xl border border-t-2 border-t-info bg-card p-5 shadow-sm">
       <div className="flex flex-wrap items-center gap-2">
         {CATEGORY_PILLS.map((pill) => (
           <button
             key={pill.value}
             onClick={() => setParam("category", pill.value)}
             className={cn(
-              "rounded-full border px-3 py-1 text-xs font-medium transition-colors",
+              "rounded-full border px-3.5 py-1.5 text-xs font-medium transition-colors",
               activeCategory === pill.value
                 ? "border-primary bg-primary text-primary-foreground"
                 : "border-border bg-background text-muted-foreground hover:border-primary/50 hover:text-foreground"
@@ -60,7 +58,7 @@ export function ApplicantsToolbar({ nationalities }: { nationalities: string[] }
         ))}
       </div>
 
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="flex flex-wrap items-center gap-3">
         <div className="relative flex-1 min-w-48">
           <Search className="absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
           <Input
@@ -121,13 +119,6 @@ export function ApplicantsToolbar({ nationalities }: { nationalities: string[] }
             ))}
           </SelectContent>
         </Select>
-
-        <div className="flex-1" />
-
-        <Button render={<Link href="/admin/applicants/new" />}>
-          <Plus className="size-4" />
-          New profile
-        </Button>
       </div>
     </div>
   );

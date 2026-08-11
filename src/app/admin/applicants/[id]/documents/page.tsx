@@ -26,7 +26,7 @@ export default async function ApplicantDocumentsPage({
         <CardTitle className="text-sm">Photos &amp; identity documents</CardTitle>
         <CardDescription>
           Passport and alteration page are visible to the assigned agent only once this
-          candidate is marked <strong>confirmed</strong> on the pipeline tab — currently{" "}
+          candidate is marked <strong>confirmed</strong> on the pipeline tab. Currently{" "}
           {applicant.confirmed ? "confirmed" : "not confirmed"}.
         </CardDescription>
       </CardHeader>

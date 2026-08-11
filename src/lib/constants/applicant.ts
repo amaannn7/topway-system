@@ -82,8 +82,8 @@ export const EXPERIENCE_TYPE_LABELS = {
 } as const;
 
 export const WORKER_CATEGORY_LABELS = {
-  AVAILABLE_EXPERIENCED: "Available — Experienced",
-  AVAILABLE_INEXPERIENCED: "Available — Inexperienced",
+  AVAILABLE_EXPERIENCED: "Available: Experienced",
+  AVAILABLE_INEXPERIENCED: "Available: Inexperienced",
   CONTRACTED: "Contracted",
 } as const;
 

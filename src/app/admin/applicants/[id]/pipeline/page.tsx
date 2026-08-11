@@ -19,6 +19,8 @@ export default async function ApplicantPipelinePage({
       musanedDate: true,
       ticketDate: true,
       saudiAgentVisaDate: true,
+      departureDate: true,
+      destinationCountry: true,
       notes: true,
       pipelineSteps: { select: { key: true, completed: true }, orderBy: { sortOrder: "asc" } },
     },

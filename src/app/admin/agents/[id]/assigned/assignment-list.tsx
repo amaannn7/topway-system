@@ -74,10 +74,10 @@ export function AssignmentList({
               className={cn(
                 "flex items-center gap-3 rounded-lg border px-3 py-2 text-left transition-colors",
                 checked
-                  ? "border-primary bg-primary/5"
+                  ? "border-purple bg-purple/5"
                   : a.isPending
                     ? "border-warning/40 hover:border-warning/60"
-                    : "border-border hover:border-primary/40"
+                    : "border-border hover:border-purple/40"
               )}
             >
               {a.headshotUrl ? (

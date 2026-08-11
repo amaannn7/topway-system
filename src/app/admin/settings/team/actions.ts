@@ -23,6 +23,7 @@ export async function createAdminUser(raw: unknown) {
       passwordHash,
       role: values.role,
       active: values.active,
+      canViewPayments: values.canViewPayments,
     },
   });
 
@@ -64,12 +65,14 @@ export async function updateAdminUser(userId: string, raw: unknown) {
     email: string;
     role: "OWNER" | "STAFF";
     active: boolean;
+    canViewPayments: boolean;
     passwordHash?: string;
   } = {
     name: values.name,
     email: values.email,
     role: values.role,
     active: values.active,
+    canViewPayments: values.canViewPayments,
   };
   if (values.password) data.passwordHash = await bcrypt.hash(values.password, 10);
 

@@ -102,7 +102,9 @@ export function InvoiceDocument({
   logoUrl,
 }: {
   invoice: Invoice & { workers: InvoiceWorker[] };
-  logoUrl: string | null;
+  // react-pdf can't reliably load a local file by path/URL on Windows (see
+  // lib/pdf-assets.ts) — callers pass raw file bytes instead.
+  logoUrl: Buffer | null;
 }) {
   const subtotal = invoice.workers.reduce(
     (sum, w) => sum + Number(w.amount) * w.qty,
@@ -154,7 +156,7 @@ export function InvoiceDocument({
           </View>
           {invoice.workers.map((w, i) => (
             <View key={w.id} style={i % 2 === 1 ? [styles.workerRow, styles.workerRowAlt] : styles.workerRow}>
-              <Text style={[styles.td, { width: "50%" }]}>— {w.name}</Text>
+              <Text style={[styles.td, { width: "50%" }]}>• {w.name}</Text>
               <Text style={[styles.td, { width: "20%" }]}></Text>
               <Text style={[styles.td, { width: "14%", textAlign: "center" }]}>
                 {String(w.qty).padStart(2, "0")}

@@ -15,6 +15,7 @@ import type { Prisma } from "@/generated/prisma/client";
 const agentApplicantArgs = {
   select: {
     id: true,
+    refNo: true,
     name: true,
     role: true,
     contract: true,
@@ -50,6 +51,9 @@ const agentApplicantArgs = {
     confirmed: true, // used server-side to gate documents below, stripped before returning
     musanedDate: true,
     ticketDate: true,
+    saudiAgentVisaDate: true,
+    departureDate: true,
+    destinationCountry: true,
     notes: true,
     employmentHistory: { orderBy: { sortOrder: "asc" } },
     photos: true,
@@ -77,6 +81,9 @@ function toAgentView(applicant: AgentApplicantRecord) {
 export async function getAgentApplicants(agentId: string) {
   const assignments = await prisma.agentAssignment.findMany({
     where: { agentId },
+    // Matches the legacy portal's natural order (creation order / ascending
+    // refNo) rather than assignment order.
+    orderBy: { applicant: { createdAt: "asc" } },
     include: { applicant: agentApplicantArgs },
   });
   return assignments.map((a) => toAgentView(a.applicant));
@@ -87,6 +94,33 @@ export async function getAgentApplicant(agentId: string, applicantId: string) {
     where: { agentId_applicantId: { agentId, applicantId } },
   });
   if (!assignment) return null;
+
+  const applicant = await prisma.applicant.findUnique({
+    where: { id: applicantId },
+    ...agentApplicantArgs,
+  });
+  if (!applicant) return null;
+
+  return toAgentView(applicant);
+}
+
+// Customer Portal — same field-stripping rules as the agent view above (a
+// customer sees strictly a subset of what their sponsoring agent sees,
+// never more), joined through CustomerShare instead of AgentAssignment.
+export async function getCustomerApplicants(customerId: string) {
+  const shares = await prisma.customerShare.findMany({
+    where: { customerId },
+    orderBy: { applicant: { createdAt: "asc" } },
+    include: { applicant: agentApplicantArgs },
+  });
+  return shares.map((s) => toAgentView(s.applicant));
+}
+
+export async function getCustomerApplicant(customerId: string, applicantId: string) {
+  const share = await prisma.customerShare.findUnique({
+    where: { customerId_applicantId: { customerId, applicantId } },
+  });
+  if (!share) return null;
 
   const applicant = await prisma.applicant.findUnique({
     where: { id: applicantId },
@@ -108,7 +142,9 @@ export async function getBrowsePool(agentId: string) {
     }),
     prisma.applicant.findMany({
       where: { pipelineStatus: { not: "SENT" } },
-      orderBy: { name: "asc" },
+      // Matches the legacy portal's natural order (creation order / ascending
+      // refNo) rather than alphabetical.
+      orderBy: { createdAt: "asc" },
       select: {
         id: true,
         name: true,

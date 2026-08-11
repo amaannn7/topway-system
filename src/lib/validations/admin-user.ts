@@ -10,6 +10,7 @@ export const adminUserFormSchema = z.object({
   password: z.union([z.string().min(8, "At least 8 characters"), z.literal("")]),
   role: z.enum(["OWNER", "STAFF"]),
   active: z.boolean(),
+  canViewPayments: z.boolean(),
 });
 
 export type AdminUserFormValues = z.output<typeof adminUserFormSchema>;

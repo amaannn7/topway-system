@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
-import path from "node:path";
 import { renderToBuffer } from "@react-pdf/renderer";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/require-session";
 import { CvDocument } from "@/lib/cv-pdf";
 import { deriveStatus } from "@/lib/pipeline-status";
+import { uploadPathToPdfSrc, staticAssetToPdfSrc } from "@/lib/pdf-assets";
 
 // Admin-side CV preview/download — legacy index.html let admin build,
 // preview, and export any profile's PDF directly from the builder screen.
@@ -12,10 +12,6 @@ import { deriveStatus } from "@/lib/pipeline-status";
 // but no PDF export entry point at all; this closes that gap using the
 // same CvDocument template the agent portal uses, with the org's shared
 // logo (admin isn't viewing this on behalf of any specific agent).
-function toLocalPath(url: string | null): string | null {
-  if (!url || !url.startsWith("/uploads/")) return null;
-  return path.join(process.cwd(), "public", url);
-}
 
 export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -48,12 +44,13 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
       applicant={{
         ...applicant,
         status: deriveStatus(applicant),
-        headshotUrl: toLocalPath(applicant.photos.find((p) => p.kind === "HEADSHOT")?.url ?? null),
-        fullPhotoUrl: toLocalPath(applicant.photos.find((p) => p.kind === "FULL_BODY")?.url ?? null),
+        headshotUrl: uploadPathToPdfSrc(applicant.photos.find((p) => p.kind === "HEADSHOT")?.url ?? null),
+        fullPhotoUrl: uploadPathToPdfSrc(applicant.photos.find((p) => p.kind === "FULL_BODY")?.url ?? null),
         documents: [], // admin has its own Documents tab; the CV export doesn't attach them here
       }}
-      agencyLogoUrl={toLocalPath(org?.headerLogoUrl ?? null)}
+      agencyLogoUrl={uploadPathToPdfSrc(org?.headerLogoUrl ?? null)}
       agencyName={null}
+      topwayLogoUrl={staticAssetToPdfSrc("brand/topway-logo.png")}
       footerLines={footerLines}
     />
   );

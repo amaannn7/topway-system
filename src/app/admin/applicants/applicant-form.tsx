@@ -413,7 +413,7 @@ export function ApplicantForm({
       <Card>
         <CardHeader>
           <CardTitle>Contact details</CardTitle>
-          <CardDescription>Internal only — never shown to agents.</CardDescription>
+          <CardDescription>Internal only. Never shown to agents.</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-wrap gap-4">
           <FieldGroup label="Phone">
@@ -440,7 +440,7 @@ export function ApplicantForm({
       <Card>
         <CardHeader>
           <CardTitle>PDF footer lines</CardTitle>
-          <CardDescription>Optional — overrides the organization default footer.</CardDescription>
+          <CardDescription>Optional. Overrides the organization default footer.</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-3">
           <Textarea rows={1} placeholder="Line 1" {...register("footerLine1")} />

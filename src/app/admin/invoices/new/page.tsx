@@ -1,8 +1,24 @@
 import { prisma } from "@/lib/prisma";
+import { auth } from "@/lib/auth";
+import { canViewPayments } from "@/lib/require-session";
+import { Card } from "@/components/ui/card";
+import { Lock } from "lucide-react";
 import { InvoiceForm } from "../invoice-form";
 import { getNextInvoiceNo } from "../actions";
 
 export default async function NewInvoicePage() {
+  const session = await auth();
+  if (!session?.user || !canViewPayments(session.user)) {
+    return (
+      <Card className="flex flex-col items-center gap-2 py-16 text-center text-sm text-muted-foreground shadow-sm">
+        <div className="flex size-14 items-center justify-center rounded-full bg-muted text-muted-foreground">
+          <Lock className="size-6" />
+        </div>
+        <p>You don&apos;t have access to payment information.</p>
+      </Card>
+    );
+  }
+
   const [invoiceNo, agents, settings] = await Promise.all([
     getNextInvoiceNo(),
     prisma.agent.findMany({

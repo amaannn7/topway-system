@@ -36,17 +36,22 @@ enum AdminRole {
 }
 
 model AdminUser {
-  id           String    @id @default(cuid())
-  name         String
-  email        String    @unique
-  passwordHash String
-  role         AdminRole @default(STAFF)
-  active       Boolean   @default(true)
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  id              String    @id @default(cuid())
+  name            String
+  email           String    @unique
+  passwordHash    String
+  role            AdminRole @default(STAFF)
+  active          Boolean   @default(true)
+  // OWNER always implicitly has payment access (checked in code); this only
+  // matters for STAFF accounts, toggled per-account from Settings > Team.
+  canViewPayments Boolean   @default(false)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 
-  sessions  Session[]
-  auditLogs AuditLog[]
+  sessions           Session[]
+  auditLogs          AuditLog[]
+  disputesReported   Dispute[]
+  remarketingRecords RemarketingRecord[]
 
   @@map("admin_users")
 }
@@ -58,9 +63,11 @@ model Session {
   expires      DateTime
   adminUserId  String?
   agentId      String?
+  customerId   String?
 
   adminUser AdminUser? @relation(fields: [adminUserId], references: [id], onDelete: Cascade)
   agent     Agent?     @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  customer  Customer?  @relation(fields: [customerId], references: [id], onDelete: Cascade)
 
   @@map("sessions")
 }
@@ -85,8 +92,46 @@ model Agent {
   assignments AgentAssignment[]
   requests    AgentRequest[]
   invoices    Invoice[]
+  customers   Customer[]
 
   @@map("agents")
+}
+
+// ────────────────────────────────────────────────────────────────
+// Customers (an agent's own sponsors/employers) — the third portal.
+// Agent-managed: each Agent creates and shares candidates with their own
+// Customer sub-accounts. A customer only ever sees applicants explicitly
+// shared with them via CustomerShare, scoped under their one parent agent.
+// ────────────────────────────────────────────────────────────────
+
+model Customer {
+  id           String   @id @default(cuid())
+  agentId      String
+  name         String
+  companyName  String?
+  username     String   @unique
+  passwordHash String
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now())
+
+  agent    Agent           @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  sessions Session[]
+  shares   CustomerShare[]
+
+  @@map("customers")
+}
+
+model CustomerShare {
+  id          String   @id @default(cuid())
+  customerId  String
+  applicantId String
+  sharedAt    DateTime @default(now())
+
+  customer  Customer  @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  applicant Applicant @relation(fields: [applicantId], references: [id], onDelete: Cascade)
+
+  @@unique([customerId, applicantId])
+  @@map("customer_shares")
 }
 
 // Replaces Agent.applicantIds — a real many-to-many join instead of an
@@ -228,22 +273,81 @@ model Applicant {
   saudiAgentVisaDate DateTime?       @db.Date
   notes              String?
 
+  // Post-departure lifecycle — probation length is looked up from
+  // destinationCountry (see PROBATION_MONTHS in lib/pipeline-status.ts);
+  // reuses EMPLOYMENT_COUNTRY_OPTIONS' vocabulary rather than a new enum.
+  departureDate      DateTime? @db.Date
+  destinationCountry String?
+
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   createdById String?
 
-  employmentHistory EmploymentRecord[]
-  pipelineSteps     PipelineStep[]
-  photos            ApplicantPhoto[]
-  documents         ApplicantDocument[]
-  assignments       AgentAssignment[]
-  requests          AgentRequest[]
-  invoiceWorkers    InvoiceWorker[]
+  employmentHistory  EmploymentRecord[]
+  pipelineSteps      PipelineStep[]
+  photos             ApplicantPhoto[]
+  documents          ApplicantDocument[]
+  assignments        AgentAssignment[]
+  requests           AgentRequest[]
+  invoiceWorkers     InvoiceWorker[]
+  disputes           Dispute[]
+  remarketingRecords RemarketingRecord[]
+  customerShares     CustomerShare[]
 
   @@index([name])
   @@index([pipelineStatus])
   @@index([workerCategory])
   @@map("applicants")
+}
+
+// ────────────────────────────────────────────────────────────────
+// Disputes & remarketing — a candidate who runs away, refuses work, or is
+// medically unfit gets a Dispute logged (by staff, or relayed from a
+// foreign agent), which may lead to a RemarketingRecord: the candidate's
+// AgentAssignment is cleared and pipelineStatus reset to ACTIVE so they
+// naturally reappear in getBrowsePool() (which already excludes only
+// pipelineStatus SENT) — no separate visibility system needed.
+// ────────────────────────────────────────────────────────────────
+
+enum DisputeCategory {
+  RUNAWAY
+  REFUSAL_TO_WORK
+  MEDICALLY_UNFIT
+  OTHER
+}
+
+model Dispute {
+  id           String          @id @default(cuid())
+  applicantId  String
+  category     DisputeCategory
+  notes        String?
+  reportedAt   DateTime        @default(now())
+  reportedById String? // null when relayed from an agent rather than logged directly by staff
+
+  applicant  Applicant  @relation(fields: [applicantId], references: [id], onDelete: Cascade)
+  reportedBy AdminUser? @relation(fields: [reportedById], references: [id], onDelete: SetNull)
+
+  remarketingRecords RemarketingRecord[]
+
+  @@index([applicantId])
+  @@map("disputes")
+}
+
+model RemarketingRecord {
+  id              String   @id @default(cuid())
+  applicantId     String
+  previousAgentId String? // snapshot of who they were placed with before, if anyone
+  disputeId       String? // optional link if this remarketing was dispute-triggered
+  remarketedAt    DateTime @default(now())
+  notes           String?
+  createdById     String?
+
+  applicant Applicant  @relation(fields: [applicantId], references: [id], onDelete: Cascade)
+  dispute   Dispute?   @relation(fields: [disputeId], references: [id], onDelete: SetNull)
+  createdBy AdminUser? @relation(fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@index([applicantId])
+  @@map("remarketing_records")
 }
 
 // G — Employment record (repeatable rows)

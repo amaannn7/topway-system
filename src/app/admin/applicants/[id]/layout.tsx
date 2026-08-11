@@ -1,10 +1,11 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { deriveStatus } from "@/lib/pipeline-status";
+import { deriveStatus, deriveLifecycleStatus } from "@/lib/pipeline-status";
 import { ApplicantStatusBadge } from "../applicant-status-badge";
+import { LifecycleStatusBadge } from "../lifecycle-status-badge";
 import { ApplicantTabsNav } from "./applicant-tabs-nav";
 import { DeleteApplicantButton } from "./delete-applicant-button";
-import { PdfPreviewDialog, PdfPreviewTriggerButton } from "@/components/pdf-preview-dialog";
+import { PdfPreviewDialog } from "@/components/pdf-preview-dialog";
 
 export default async function ApplicantDetailLayout({
   children,
@@ -22,12 +23,15 @@ export default async function ApplicantDetailLayout({
       role: true,
       pipelineStatus: true,
       ticketDate: true,
+      departureDate: true,
+      destinationCountry: true,
       pipelineSteps: { select: { completed: true } },
     },
   });
   if (!applicant) notFound();
 
   const status = deriveStatus(applicant);
+  const lifecycle = deriveLifecycleStatus(applicant);
 
   return (
     <div className="flex flex-col gap-4">
@@ -38,6 +42,9 @@ export default async function ApplicantDetailLayout({
               {applicant.name || "(Unnamed)"}
             </h1>
             <ApplicantStatusBadge status={status} />
+            {lifecycle.status !== "NOT_DEPARTED" && (
+              <LifecycleStatusBadge status={lifecycle.status} />
+            )}
           </div>
           <p className="text-sm text-muted-foreground">{applicant.role}</p>
         </div>
@@ -45,8 +52,8 @@ export default async function ApplicantDetailLayout({
           <PdfPreviewDialog
             pdfUrl={`/admin/applicants/${applicant.id}/cv`}
             fileName={`${applicant.name || "candidate"}-cv.pdf`}
-            title={`CV — ${applicant.name || "Applicant"}`}
-            trigger={<PdfPreviewTriggerButton label="Preview CV" />}
+            title={`${applicant.name || "Applicant"} CV`}
+            triggerLabel="Preview CV"
           />
           <DeleteApplicantButton applicantId={applicant.id} name={applicant.name} />
         </div>

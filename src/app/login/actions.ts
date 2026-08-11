@@ -42,3 +42,22 @@ export async function agentLoginAction(
     throw err;
   }
 }
+
+export async function customerLoginAction(
+  _prevState: LoginState,
+  formData: FormData
+): Promise<LoginState> {
+  try {
+    await signIn("customer", {
+      username: formData.get("username"),
+      password: formData.get("password"),
+      redirectTo: "/customer/applicants",
+    });
+    return { error: null };
+  } catch (err) {
+    if (err instanceof AuthError) {
+      return { error: "Incorrect username or password." };
+    }
+    throw err;
+  }
+}

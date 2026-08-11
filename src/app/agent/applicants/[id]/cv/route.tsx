@@ -1,18 +1,10 @@
 import { NextResponse } from "next/server";
-import path from "node:path";
 import { renderToBuffer } from "@react-pdf/renderer";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getAgentApplicant } from "@/lib/agent-applicant-view";
 import { CvDocument } from "@/lib/cv-pdf";
-
-// Local /uploads/... URLs need to become absolute filesystem paths for
-// react-pdf's server-side <Image>, which reads files directly rather than
-// making an HTTP request back to this same server.
-function toLocalPath(url: string | null): string | null {
-  if (!url || !url.startsWith("/uploads/")) return null;
-  return path.join(process.cwd(), "public", url);
-}
+import { uploadPathToPdfSrc, staticAssetToPdfSrc } from "@/lib/pdf-assets";
 
 export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   const session = await auth();
@@ -40,18 +32,19 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
   // be embedded as extra PDF pages, see the note in lib/cv-pdf.tsx.
   const extraImagePages = applicant.documents
     .filter((d) => d.mimeType === "image/jpeg" || d.mimeType === "image/png")
-    .map((d) => toLocalPath(d.url))
-    .filter((p): p is string => !!p);
+    .map((d) => uploadPathToPdfSrc(d.url))
+    .filter((p): p is Buffer => !!p);
 
   const pdfBuffer = await renderToBuffer(
     <CvDocument
       applicant={{
         ...applicant,
-        headshotUrl: toLocalPath(applicant.headshotUrl),
-        fullPhotoUrl: toLocalPath(applicant.fullPhotoUrl),
+        headshotUrl: uploadPathToPdfSrc(applicant.headshotUrl),
+        fullPhotoUrl: uploadPathToPdfSrc(applicant.fullPhotoUrl),
       }}
-      agencyLogoUrl={toLocalPath(agent?.logoUrl ?? null)}
+      agencyLogoUrl={uploadPathToPdfSrc(agent?.logoUrl ?? null)}
       agencyName={agent?.company ?? null}
+      topwayLogoUrl={staticAssetToPdfSrc("brand/topway-logo.png")}
       footerLines={footerLines}
       extraImagePages={extraImagePages}
     />

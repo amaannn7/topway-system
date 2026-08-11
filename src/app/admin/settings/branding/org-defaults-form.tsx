@@ -83,7 +83,7 @@ export function OrgDefaultsForm({ defaultValues }: { defaultValues: OrgDefaultsV
       <Card>
         <CardHeader>
           <CardTitle className="text-sm">Default bank details</CardTitle>
-          <CardDescription>Prefilled on every new invoice — can still be edited per invoice.</CardDescription>
+          <CardDescription>Prefilled on every new invoice; can still be edited per invoice.</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-wrap gap-4">
           <FieldGroup label="Bank name">

@@ -168,7 +168,7 @@ export function InvoiceForm({
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
           {agents.length > 0 && (
-            <FieldGroup label="Select agent (optional — autofills fields below)">
+            <FieldGroup label="Select agent (optional, autofills fields below)">
               <Select value={watch("agentId") ?? null} onValueChange={(v) => v && selectAgent(v)}>
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Type manually or select an agent" />
@@ -176,7 +176,7 @@ export function InvoiceForm({
                 <SelectContent>
                   {agents.map((a) => (
                     <SelectItem key={a.id} value={a.id}>
-                      {a.name} — {a.company} ({a.country})
+                      {a.name} · {a.company} ({a.country})
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -343,7 +343,7 @@ export function InvoiceForm({
             <Input {...register("swiftCode")} />
           </FieldGroup>
           <div className="w-full">
-            <FieldGroup label="Notes (optional — appears in footer)">
+            <FieldGroup label="Notes (optional, appears in footer)">
               <Textarea rows={2} {...register("notes")} />
             </FieldGroup>
           </div>

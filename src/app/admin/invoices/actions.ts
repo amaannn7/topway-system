@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { requireAdmin } from "@/lib/require-session";
+import { requireAdmin, requirePaymentAccess } from "@/lib/require-session";
 import { logAudit } from "@/lib/audit";
 import { invoiceFormSchema } from "@/lib/validations/invoice";
 
@@ -36,7 +36,7 @@ function buildInvoiceData(values: ReturnType<typeof invoiceFormSchema.parse>) {
 }
 
 export async function createInvoice(raw: unknown) {
-  const admin = await requireAdmin();
+  const admin = await requirePaymentAccess();
   const values = invoiceFormSchema.parse(raw);
 
   const existing = await prisma.invoice.findUnique({ where: { invoiceNo: values.invoiceNo } });
@@ -70,7 +70,7 @@ export async function createInvoice(raw: unknown) {
 }
 
 export async function updateInvoice(invoiceId: string, raw: unknown) {
-  const admin = await requireAdmin();
+  const admin = await requirePaymentAccess();
   const values = invoiceFormSchema.parse(raw);
 
   const existing = await prisma.invoice.findUnique({ where: { invoiceNo: values.invoiceNo } });

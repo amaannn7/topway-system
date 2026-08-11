@@ -26,7 +26,7 @@ export function AgentTabsNav({ agentId }: { agentId: string }) {
             className={cn(
               "border-b-2 px-3 py-2 text-sm font-medium transition-colors",
               active
-                ? "border-primary text-foreground"
+                ? "border-purple text-foreground"
                 : "border-transparent text-muted-foreground hover:text-foreground"
             )}
           >

@@ -110,6 +110,8 @@ export const pipelineUpdateSchema = z.object({
   musanedDate: dateOrEmpty,
   ticketDate: dateOrEmpty,
   saudiAgentVisaDate: dateOrEmpty,
+  departureDate: dateOrEmpty,
+  destinationCountry: z.string().trim(),
   notes: z.string().trim().max(2000),
 });
 

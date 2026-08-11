@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Download, Loader2, Eye } from "lucide-react";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -12,6 +12,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { cn } from "@/lib/utils";
 
 // Shared preview-before-download modal for both the CV PDF (agent portal)
 // and the invoice PDF (admin) — legacy index.html and invoice.html both
@@ -19,16 +20,31 @@ import {
 // (openPreview()/previewFromForm()); this replaces that with the actual
 // generated PDF shown in an <iframe> via a blob URL, since these are now
 // real server-rendered documents rather than an HTML layout to screenshot.
+//
+// The trigger is styled via `buttonVariants` classes applied straight to
+// DialogTrigger's native <button>, rather than nesting a <Button> element
+// through `render` — two styled primitives each stamping their own
+// `data-slot` onto the same node caused a client/server hydration mismatch.
 export function PdfPreviewDialog({
   pdfUrl,
   fileName,
   title,
-  trigger,
+  triggerLabel = "Preview",
+  triggerVariant = "outline",
+  triggerSize = "sm",
+  triggerClassName,
+  triggerIconOnly = false,
+  triggerAriaLabel,
 }: {
   pdfUrl: string;
   fileName: string;
   title: string;
-  trigger: React.ReactElement;
+  triggerLabel?: string;
+  triggerVariant?: React.ComponentProps<typeof Button>["variant"];
+  triggerSize?: React.ComponentProps<typeof Button>["size"];
+  triggerClassName?: string;
+  triggerIconOnly?: boolean;
+  triggerAriaLabel?: string;
 }) {
   const [open, setOpen] = useState(false);
   const [blobUrl, setBlobUrl] = useState<string | null>(null);
@@ -60,8 +76,14 @@ export function PdfPreviewDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogTrigger render={trigger} />
-      <DialogContent className="flex max-h-[90vh] max-w-3xl flex-col">
+      <DialogTrigger
+        className={cn(buttonVariants({ variant: triggerVariant, size: triggerSize }), triggerClassName)}
+        aria-label={triggerIconOnly ? (triggerAriaLabel ?? triggerLabel) : undefined}
+      >
+        <Eye className="size-4" />
+        {!triggerIconOnly && triggerLabel}
+      </DialogTrigger>
+      <DialogContent className="flex max-h-[90vh] max-w-3xl sm:max-w-3xl flex-col">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
         </DialogHeader>
@@ -84,14 +106,5 @@ export function PdfPreviewDialog({
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  );
-}
-
-export function PdfPreviewTriggerButton({ label = "Preview" }: { label?: string }) {
-  return (
-    <Button variant="outline" size="sm">
-      <Eye className="size-4" />
-      {label}
-    </Button>
   );
 }

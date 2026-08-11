@@ -37,17 +37,17 @@ export function RequestRow({
   }
 
   return (
-    <div className="flex items-center gap-3 rounded-lg border px-3 py-2.5">
+    <div className="flex items-center gap-3 rounded-lg border border-l-4 border-l-warning bg-card px-4 py-3 shadow-sm">
       {request.headshotUrl ? (
         <Image
           src={request.headshotUrl}
           alt=""
-          width={32}
-          height={40}
-          className="h-10 w-8 shrink-0 rounded object-cover"
+          width={38}
+          height={38}
+          className="size-9.5 shrink-0 rounded-full object-cover ring-1 ring-border"
         />
       ) : (
-        <div className="flex h-10 w-8 shrink-0 items-center justify-center rounded bg-muted text-muted-foreground">
+        <div className="flex size-9.5 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
           <UserRound className="size-4" />
         </div>
       )}
@@ -66,13 +66,19 @@ export function RequestRow({
       <Button
         size="sm"
         variant="outline"
+        className="rounded-full"
         disabled={pending}
         onClick={() => handle("reject")}
         aria-label="Reject request"
       >
         <X className="size-4" />
       </Button>
-      <Button size="sm" disabled={pending} onClick={() => handle("approve")}>
+      <Button
+        size="sm"
+        className="rounded-full bg-success text-success-foreground hover:bg-success/85"
+        disabled={pending}
+        onClick={() => handle("approve")}
+      >
         <Check className="size-4" />
         Approve
       </Button>

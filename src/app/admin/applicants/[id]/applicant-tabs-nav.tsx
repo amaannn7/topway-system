@@ -9,6 +9,7 @@ const TABS = [
   { segment: "edit", label: "Edit" },
   { segment: "pipeline", label: "Pipeline" },
   { segment: "documents", label: "Documents" },
+  { segment: "history", label: "History" },
 ] as const;
 
 export function ApplicantTabsNav({ applicantId }: { applicantId: string }) {

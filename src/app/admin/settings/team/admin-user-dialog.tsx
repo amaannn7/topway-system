@@ -10,6 +10,7 @@ import { adminUserFormSchema, type AdminUserFormValues } from "@/lib/validations
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -48,9 +49,12 @@ export function AdminUserDialog({
       password: "",
       role: "STAFF" as const,
       active: true,
+      canViewPayments: false,
       ...defaultValues,
     },
   });
+
+  const role = watch("role");
 
   function onSubmit(values: AdminUserFormValues) {
     startTransition(async () => {
@@ -76,7 +80,7 @@ export function AdminUserDialog({
       <DialogTrigger
         render={
           trigger ?? (
-            <Button size="sm">
+            <Button size="lg" className="rounded-full px-4">
               <Plus className="size-4" />
               Add account
             </Button>
@@ -143,6 +147,20 @@ export function AdminUserDialog({
               </Select>
             </div>
           </div>
+          {role !== "OWNER" && (
+            <label className="group/field flex items-center gap-2.5 text-sm">
+              <Checkbox
+                checked={!!watch("canViewPayments")}
+                onCheckedChange={(v) => setValue("canViewPayments", !!v)}
+              />
+              <span>
+                Can view payment information
+                <span className="block text-xs text-muted-foreground">
+                  Invoice totals, advances, and bank details. Owners always have access.
+                </span>
+              </span>
+            </label>
+          )}
           <DialogFooter>
             <Button type="submit" disabled={pending}>
               {pending ? "Saving…" : userId ? "Save changes" : "Create account"}

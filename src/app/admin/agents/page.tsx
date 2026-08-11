@@ -24,22 +24,24 @@ export default async function AdminAgentsPage() {
             Foreign recruitment agencies with portal access.
           </p>
         </div>
-        <Button render={<Link href="/admin/agents/new" />}>
+        <Button size="lg" className="rounded-full px-4 shadow-sm" render={<Link href="/admin/agents/new" />}>
           <Plus className="size-4" />
           Add agent
         </Button>
       </div>
 
       {agents.length === 0 ? (
-        <Card className="flex flex-col items-center gap-2 py-16 text-center text-sm text-muted-foreground">
-          <Building2 className="size-8 opacity-40" />
+        <Card className="flex flex-col items-center gap-2 py-16 text-center text-sm text-muted-foreground shadow-sm">
+          <div className="flex size-14 items-center justify-center rounded-full bg-purple/10 text-purple">
+            <Building2 className="size-6" />
+          </div>
           <p>No agents yet. Add the first agency to get started.</p>
         </Card>
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {agents.map((agent) => (
             <Link key={agent.id} href={`/admin/agents/${agent.id}`}>
-              <Card className="flex flex-col gap-3 p-4 transition-colors hover:border-primary/50">
+              <Card className="flex flex-col gap-3 border-l-4 border-l-purple p-4 shadow-sm transition-all hover:shadow-md">
                 <div className="flex items-start gap-3">
                   {agent.logoUrl ? (
                     <Image
@@ -50,7 +52,7 @@ export default async function AdminAgentsPage() {
                       className="size-11 shrink-0 rounded-lg border object-contain p-1"
                     />
                   ) : (
-                    <div className="flex size-11 shrink-0 items-center justify-center rounded-lg bg-muted text-sm font-semibold text-muted-foreground">
+                    <div className="flex size-11 shrink-0 items-center justify-center rounded-lg bg-purple/10 text-sm font-semibold text-purple">
                       {agent.company.charAt(0).toUpperCase()}
                     </div>
                   )}

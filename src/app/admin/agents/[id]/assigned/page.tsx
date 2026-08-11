@@ -22,7 +22,7 @@ export default async function AgentAssignedPage({
   const pendingIds = new Set(agent.requests.map((r) => r.applicantId));
 
   const applicants = await prisma.applicant.findMany({
-    orderBy: { name: "asc" },
+    orderBy: { createdAt: "asc" },
     select: {
       id: true,
       name: true,

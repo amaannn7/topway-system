@@ -29,12 +29,14 @@ export default async function AdminRequestsPage() {
       </div>
 
       {requests.length === 0 ? (
-        <Card className="flex flex-col items-center gap-2 py-16 text-center text-sm text-muted-foreground">
-          <Inbox className="size-8 opacity-40" />
+        <Card className="flex flex-col items-center gap-2 py-16 text-center text-sm text-muted-foreground shadow-sm">
+          <div className="flex size-14 items-center justify-center rounded-full bg-warning/15 text-warning-foreground">
+            <Inbox className="size-6" />
+          </div>
           <p>No pending requests.</p>
         </Card>
       ) : (
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-2.5">
           {requests.map((r) => (
             <RequestRow
               key={r.id}

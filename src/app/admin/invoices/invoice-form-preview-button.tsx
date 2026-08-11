@@ -39,7 +39,7 @@ export function InvoiceFormPreviewButton({
       const blob = await res.blob();
       setBlobUrl(URL.createObjectURL(blob));
     } catch {
-      toast.error("Could not generate preview — check required fields");
+      toast.error("Could not generate preview. Check required fields.");
       setOpen(false);
     } finally {
       setLoading(false);
@@ -65,7 +65,7 @@ export function InvoiceFormPreviewButton({
           </Button>
         }
       />
-      <DialogContent className="flex max-h-[90vh] max-w-3xl flex-col">
+      <DialogContent className="flex max-h-[90vh] max-w-3xl sm:max-w-3xl flex-col">
         <DialogHeader>
           <DialogTitle>Invoice preview</DialogTitle>
         </DialogHeader>
