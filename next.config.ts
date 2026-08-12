@@ -14,6 +14,18 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  // Uploaded photos/documents are served from Vercel Blob in production
+  // (see src/lib/uploads.ts) — next/image needs the host allow-listed to
+  // optimize/serve those remote URLs. Local dev uploads stay same-origin
+  // under /uploads and don't need an entry here.
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "*.public.blob.vercel-storage.com",
+      },
+    ],
+  },
   async headers() {
     return [
       {

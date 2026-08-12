@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Check } from "lucide-react";
+import { Check, ListChecks, Settings2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -113,12 +113,17 @@ export function PipelineForm({
 
   return (
     <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-sm">Processing steps</CardTitle>
-          <CardDescription>
-            Fixed order: Medical → Enjaz → Bureau → Wakalah → Embassy → Payment.
-          </CardDescription>
+      <Card className="shadow-sm">
+        <CardHeader className="flex flex-row items-center gap-3 space-y-0">
+          <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-success/10 text-success">
+            <ListChecks className="size-4.5" />
+          </div>
+          <div>
+            <CardTitle className="text-sm">Processing steps</CardTitle>
+            <CardDescription>
+              Fixed order: Medical → Enjaz → Bureau → Wakalah → Embassy → Payment.
+            </CardDescription>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
@@ -130,19 +135,21 @@ export function PipelineForm({
                   type="button"
                   onClick={() => setSteps((prev) => ({ ...prev, [step.key]: !prev[step.key] }))}
                   className={cn(
-                    "flex items-center gap-2 rounded-md border px-3 py-2 text-sm font-medium transition-colors",
+                    "flex items-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium shadow-xs transition-colors",
                     checked
-                      ? "border-success/40 bg-success/10 text-success"
-                      : "border-border hover:border-primary/40"
+                      ? "border-success/30 bg-success/10 text-success"
+                      : "border-transparent bg-muted/60 text-muted-foreground hover:bg-muted"
                   )}
                 >
                   <span
                     className={cn(
-                      "flex size-4 shrink-0 items-center justify-center rounded-sm border",
-                      checked ? "border-success bg-success text-white" : "border-border"
+                      "flex size-4.5 shrink-0 items-center justify-center rounded-full border transition-colors",
+                      checked
+                        ? "border-success bg-success text-success-foreground"
+                        : "border-muted-foreground/30 bg-background"
                     )}
                   >
-                    {checked && <Check className="size-3" />}
+                    {checked && <Check className="size-3" strokeWidth={3} />}
                   </span>
                   {step.label}
                 </button>
@@ -155,16 +162,28 @@ export function PipelineForm({
               type="button"
               onClick={() => setConfirmed((v) => !v)}
               className={cn(
-                "rounded-md border px-3 py-2 text-left text-sm font-medium transition-colors",
+                "flex items-center gap-3 rounded-lg border px-3 py-2.5 text-left text-sm font-medium shadow-xs transition-colors",
                 confirmed
-                  ? "border-success/40 bg-success/10 text-success"
-                  : "border-border text-muted-foreground hover:border-primary/40"
+                  ? "border-success/30 bg-success/10 text-success"
+                  : "border-transparent bg-muted/60 text-muted-foreground hover:bg-muted"
               )}
             >
-              {confirmed ? "✓ Candidate confirmed" : "○ Mark as confirmed"}
-              <p className="text-xs font-normal opacity-80">
-                Unlocks passport documents for the assigned agent.
-              </p>
+              <span
+                className={cn(
+                  "flex size-4.5 shrink-0 items-center justify-center rounded-full border transition-colors",
+                  confirmed
+                    ? "border-success bg-success text-success-foreground"
+                    : "border-muted-foreground/30 bg-background"
+                )}
+              >
+                {confirmed && <Check className="size-3" strokeWidth={3} />}
+              </span>
+              <span>
+                Candidate confirmed
+                <p className="text-xs font-normal opacity-80">
+                  Unlocks passport documents for the assigned agent.
+                </p>
+              </span>
             </button>
           </div>
 
@@ -189,8 +208,11 @@ export function PipelineForm({
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
+      <Card className="shadow-sm">
+        <CardHeader className="flex flex-row items-center gap-3 space-y-0">
+          <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-info/10 text-info">
+            <Settings2 className="size-4.5" />
+          </div>
           <CardTitle className="text-sm">Details</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col gap-3">

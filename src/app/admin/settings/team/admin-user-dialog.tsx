@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Plus, Pencil } from "lucide-react";
 import { adminUserFormSchema, type AdminUserFormValues } from "@/lib/validations/admin-user";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -26,16 +26,31 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { cn } from "@/lib/utils";
 import { createAdminUser, updateAdminUser } from "./actions";
 
+// Trigger is styled via `buttonVariants` classes applied straight to
+// DialogTrigger's native <button> rather than nesting a <Button> through
+// `render` — see PdfPreviewDialog's comment: two styled primitives each
+// stamping their own `data-slot` onto the same node breaks the trigger.
 export function AdminUserDialog({
   userId,
   defaultValues,
-  trigger,
+  triggerVariant = "default",
+  triggerSize = "lg",
+  triggerClassName,
+  triggerLabel = "Add account",
+  triggerIconOnly = false,
+  triggerAriaLabel,
 }: {
   userId?: string;
   defaultValues?: Partial<AdminUserFormValues>;
-  trigger?: React.ReactElement;
+  triggerVariant?: React.ComponentProps<typeof Button>["variant"];
+  triggerSize?: React.ComponentProps<typeof Button>["size"];
+  triggerClassName?: string;
+  triggerLabel?: string;
+  triggerIconOnly?: boolean;
+  triggerAriaLabel?: string;
 }) {
   const [open, setOpen] = useState(false);
   const router = useRouter();
@@ -78,15 +93,12 @@ export function AdminUserDialog({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger
-        render={
-          trigger ?? (
-            <Button size="lg" className="rounded-full px-4">
-              <Plus className="size-4" />
-              Add account
-            </Button>
-          )
-        }
-      />
+        className={cn(buttonVariants({ variant: triggerVariant, size: triggerSize }), triggerClassName)}
+        aria-label={triggerIconOnly ? (triggerAriaLabel ?? triggerLabel) : undefined}
+      >
+        {userId ? <Pencil className="size-4" /> : <Plus className="size-4" />}
+        {!triggerIconOnly && triggerLabel}
+      </DialogTrigger>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{userId ? "Edit account" : "Add staff account"}</DialogTitle>
@@ -169,13 +181,5 @@ export function AdminUserDialog({
         </form>
       </DialogContent>
     </Dialog>
-  );
-}
-
-export function EditAdminUserTrigger() {
-  return (
-    <Button variant="ghost" size="icon" aria-label="Edit account">
-      <Pencil className="size-4" />
-    </Button>
   );
 }

@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { AlertTriangle, Repeat, Clock } from "lucide-react";
+import { AlertTriangle, Repeat, Clock, History } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -124,13 +124,18 @@ export function HistoryPanel({
 
   return (
     <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-sm">Log a dispute</CardTitle>
-          <CardDescription>
-            Runaway, refusal to work, medically unfit, or another issue reported for this
-            candidate.
-          </CardDescription>
+      <Card className="shadow-sm">
+        <CardHeader className="flex flex-row items-center gap-3 space-y-0">
+          <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-destructive/10 text-destructive">
+            <AlertTriangle className="size-4.5" />
+          </div>
+          <div>
+            <CardTitle className="text-sm">Log a dispute</CardTitle>
+            <CardDescription>
+              Runaway, refusal to work, medically unfit, or another issue reported for this
+              candidate.
+            </CardDescription>
+          </div>
         </CardHeader>
         <CardContent className="flex flex-col gap-3">
           <div>
@@ -163,14 +168,19 @@ export function HistoryPanel({
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-sm">Remarket this candidate</CardTitle>
-          <CardDescription>
-            {currentAgentCompany
-              ? `Currently assigned to ${currentAgentCompany}. Remarketing clears this assignment and reopens the candidate in Browse & Request.`
-              : "No agent is currently assigned, so there's nothing to remarket. The candidate is already visible in Browse & Request."}
-          </CardDescription>
+      <Card className="shadow-sm">
+        <CardHeader className="flex flex-row items-center gap-3 space-y-0">
+          <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+            <Repeat className="size-4.5" />
+          </div>
+          <div>
+            <CardTitle className="text-sm">Remarket this candidate</CardTitle>
+            <CardDescription>
+              {currentAgentCompany
+                ? `Currently assigned to ${currentAgentCompany}. Remarketing clears this assignment and reopens the candidate in Browse & Request.`
+                : "No agent is currently assigned, so there's nothing to remarket. The candidate is already visible in Browse & Request."}
+            </CardDescription>
+          </div>
         </CardHeader>
         <CardContent className="flex flex-col gap-3">
           {currentAgentCompany ? (
@@ -216,10 +226,15 @@ export function HistoryPanel({
         </CardContent>
       </Card>
 
-      <Card className="lg:col-span-2">
-        <CardHeader>
-          <CardTitle className="text-sm">History</CardTitle>
-          <CardDescription>Past disputes and remarketing events, most recent first.</CardDescription>
+      <Card className="shadow-sm lg:col-span-2">
+        <CardHeader className="flex flex-row items-center gap-3 space-y-0">
+          <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-info/10 text-info">
+            <History className="size-4.5" />
+          </div>
+          <div>
+            <CardTitle className="text-sm">History</CardTitle>
+            <CardDescription>Past disputes and remarketing events, most recent first.</CardDescription>
+          </div>
         </CardHeader>
         <CardContent className="flex flex-col gap-2.5">
           {disputes.length === 0 && remarketingRecords.length === 0 && (
@@ -230,9 +245,9 @@ export function HistoryPanel({
           {remarketingRecords.map((r) => (
             <div
               key={r.id}
-              className="flex items-start gap-3 rounded-lg border border-l-4 border-l-purple bg-card px-3.5 py-2.5"
+              className="flex items-start gap-3 rounded-lg border border-l-4 border-l-primary bg-card px-3.5 py-2.5"
             >
-              <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-purple/10 text-purple">
+              <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
                 <Repeat className="size-4" />
               </div>
               <div className="min-w-0 flex-1">

@@ -8,15 +8,35 @@ import { ApplicantStatusBadge } from "@/app/admin/applicants/applicant-status-ba
 import { LifecycleStatusBadge } from "@/app/admin/applicants/lifecycle-status-badge";
 import { DownloadCvButton } from "../download-cv-button";
 import { PdfPreviewDialog } from "@/components/pdf-preview-dialog";
-import { UserRound } from "lucide-react";
+import { UserRound, IdCard, Briefcase } from "lucide-react";
 import { DisputeReportForm } from "./dispute-report-form";
+import { cn } from "@/lib/utils";
 
 function Row({ label, value }: { label: string; value: React.ReactNode }) {
   if (value === null || value === undefined || value === "") return null;
   return (
-    <div className="flex gap-2 py-1 text-sm">
-      <span className="min-w-32 shrink-0 font-medium text-muted-foreground">{label}</span>
-      <span>{value}</span>
+    <div className="flex flex-col gap-0.5 py-2">
+      <span className="text-xs font-medium text-muted-foreground">{label}</span>
+      <span className="text-sm font-medium text-foreground">{value}</span>
+    </div>
+  );
+}
+
+function SectionIcon({
+  icon: Icon,
+  className,
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  className?: string;
+}) {
+  return (
+    <div
+      className={cn(
+        "flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary",
+        className
+      )}
+    >
+      <Icon className="size-4" />
     </div>
   );
 }
@@ -76,7 +96,7 @@ export default async function AgentApplicantDetailPage({
       </div>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-        <Card className="lg:col-span-1">
+        <Card className="shadow-sm lg:col-span-1">
           <CardContent className="flex flex-col items-center gap-3 pt-6">
             {applicant.headshotUrl ? (
               <Image
@@ -84,10 +104,10 @@ export default async function AgentApplicantDetailPage({
                 alt=""
                 width={120}
                 height={150}
-                className="h-[150px] w-[120px] rounded-lg object-cover"
+                className="h-[150px] w-[120px] rounded-lg object-cover shadow-sm ring-1 ring-foreground/10"
               />
             ) : (
-              <div className="flex h-[150px] w-[120px] items-center justify-center rounded-lg bg-muted text-muted-foreground">
+              <div className="flex h-[150px] w-[120px] items-center justify-center rounded-lg bg-primary/10 text-primary shadow-sm ring-1 ring-foreground/10">
                 <UserRound className="size-8" />
               </div>
             )}
@@ -107,11 +127,12 @@ export default async function AgentApplicantDetailPage({
         </Card>
 
         <div className="flex flex-col gap-4 lg:col-span-2">
-          <Card>
-            <CardHeader>
+          <Card className="shadow-sm">
+            <CardHeader className="flex flex-row items-center gap-3 space-y-0">
+              <SectionIcon icon={IdCard} />
               <CardTitle className="text-sm">Personal information</CardTitle>
             </CardHeader>
-            <CardContent className="grid grid-cols-1 sm:grid-cols-2">
+            <CardContent className="grid grid-cols-1 divide-y divide-border/60 sm:grid-cols-2 sm:gap-x-6 sm:divide-y-0">
               <Row label="Nationality" value={applicant.nationality} />
               <Row label="Religion" value={applicant.religion} />
               <Row label="Date of birth" value={fmtDate(applicant.dateOfBirth)} />
@@ -123,11 +144,12 @@ export default async function AgentApplicantDetailPage({
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader>
+          <Card className="shadow-sm">
+            <CardHeader className="flex flex-row items-center gap-3 space-y-0">
+              <SectionIcon icon={Briefcase} className="bg-info/10 text-info" />
               <CardTitle className="text-sm">Passport</CardTitle>
             </CardHeader>
-            <CardContent className="grid grid-cols-1 sm:grid-cols-2">
+            <CardContent className="grid grid-cols-1 divide-y divide-border/60 sm:grid-cols-2 sm:gap-x-6 sm:divide-y-0">
               <Row label="Passport no." value={applicant.passportNo} />
               <Row label="Place of issue" value={applicant.passportIssuedAt} />
               <Row label="Date of issue" value={fmtDate(applicant.passportIssueDate)} />
@@ -136,14 +158,16 @@ export default async function AgentApplicantDetailPage({
           </Card>
 
           {applicant.employmentHistory.length > 0 && (
-            <Card>
-              <CardHeader>
+            <Card className="shadow-sm">
+              <CardHeader className="flex flex-row items-center gap-3 space-y-0">
+                <SectionIcon icon={Briefcase} className="bg-amber/15 text-amber-foreground" />
                 <CardTitle className="text-sm">Employment record</CardTitle>
               </CardHeader>
-              <CardContent className="flex flex-col gap-1">
+              <CardContent className="flex flex-col divide-y divide-border/60">
                 {applicant.employmentHistory.map((row) => (
-                  <div key={row.id} className="text-sm">
-                    {row.position} · {row.country} · {row.period}
+                  <div key={row.id} className="py-2 text-sm first:pt-0">
+                    <span className="font-medium text-foreground">{row.position}</span>
+                    <span className="text-muted-foreground"> · {row.country} · {row.period}</span>
                   </div>
                 ))}
               </CardContent>

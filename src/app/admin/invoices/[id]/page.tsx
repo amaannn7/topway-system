@@ -3,7 +3,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Pencil, Download } from "lucide-react";
+import { Pencil, Download, FileText, Landmark, Users2 } from "lucide-react";
 import { PdfPreviewDialog } from "@/components/pdf-preview-dialog";
 import { auth } from "@/lib/auth";
 import { canViewPayments } from "@/lib/require-session";
@@ -12,9 +12,25 @@ import { MaskedAmount } from "../masked-amount";
 function Row({ label, value }: { label: string; value: React.ReactNode }) {
   if (value === null || value === undefined || value === "") return null;
   return (
-    <div className="flex gap-2 py-1 text-sm">
-      <span className="min-w-40 shrink-0 font-medium text-muted-foreground">{label}</span>
-      <span>{value}</span>
+    <div className="flex flex-col gap-0.5 py-2 sm:flex-row sm:items-baseline sm:gap-2">
+      <span className="text-xs font-medium text-muted-foreground sm:min-w-40 sm:shrink-0 sm:text-sm">
+        {label}
+      </span>
+      <span className="text-sm font-medium text-foreground">{value}</span>
+    </div>
+  );
+}
+
+function SectionIcon({
+  icon: Icon,
+  className,
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  className?: string;
+}) {
+  return (
+    <div className={`flex size-9 shrink-0 items-center justify-center rounded-lg ${className}`}>
+      <Icon className="size-4.5" />
     </div>
   );
 }
@@ -45,12 +61,17 @@ export default async function InvoiceDetailPage({
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Invoice #{invoice.invoiceNo}</h1>
-          <p className="text-sm text-muted-foreground">
-            {invoice.billToTitle} {invoice.billToCompany}
-          </p>
+      <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-gradient-to-br from-primary/10 via-primary/5 to-transparent p-5 ring-1 ring-primary/10">
+        <div className="flex items-center gap-3.5">
+          <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary/15 text-primary ring-1 ring-primary/10">
+            <FileText className="size-5" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-semibold tracking-tight">Invoice #{invoice.invoiceNo}</h1>
+            <p className="text-sm text-muted-foreground">
+              {invoice.billToTitle} {invoice.billToCompany}
+            </p>
+          </div>
         </div>
         <div className="flex gap-2">
           {canSeePayments && (
@@ -73,11 +94,12 @@ export default async function InvoiceDetailPage({
       </div>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <Card>
-          <CardHeader>
+        <Card className="shadow-sm">
+          <CardHeader className="flex flex-row items-center gap-3 space-y-0">
+            <SectionIcon icon={FileText} className="bg-primary/10 text-primary" />
             <CardTitle className="text-sm">Details</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="divide-y divide-border/60">
             <Row label="Invoice date" value={fmtDate(invoice.invoicedDate)} />
             <Row label="Currency" value={invoice.currency} />
             <Row label="Purpose" value={invoice.billToPurpose} />
@@ -87,11 +109,12 @@ export default async function InvoiceDetailPage({
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
+        <Card className="shadow-sm">
+          <CardHeader className="flex flex-row items-center gap-3 space-y-0">
+            <SectionIcon icon={Landmark} className="bg-info/10 text-info" />
             <CardTitle className="text-sm">Bank details</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="divide-y divide-border/60">
             {canSeePayments ? (
               <>
                 <Row label="Bank name" value={invoice.bankName} />
@@ -108,8 +131,9 @@ export default async function InvoiceDetailPage({
         </Card>
       </div>
 
-      <Card>
-        <CardHeader>
+      <Card className="shadow-sm">
+        <CardHeader className="flex flex-row items-center gap-3 space-y-0">
+          <SectionIcon icon={Users2} className="bg-primary/10 text-primary" />
           <CardTitle className="text-sm">Workers</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col gap-1">

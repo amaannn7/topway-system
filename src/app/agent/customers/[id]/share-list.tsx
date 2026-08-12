@@ -70,8 +70,8 @@ export function ShareList({
               type="button"
               onClick={() => toggle(a.id)}
               className={cn(
-                "flex items-center gap-3 rounded-lg border px-3 py-2 text-left transition-colors",
-                checked ? "border-purple bg-purple/5" : "border-border hover:border-purple/40"
+                "flex items-center gap-3 rounded-lg border px-3 py-2 text-left shadow-xs transition-all",
+                checked ? "border-primary bg-primary/5 shadow-sm" : "border-border hover:border-primary/40"
               )}
             >
               {a.headshotUrl ? (

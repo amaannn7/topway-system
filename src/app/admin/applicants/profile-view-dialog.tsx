@@ -84,7 +84,7 @@ export function ProfileViewDialog({
               className="h-22 w-18 shrink-0 rounded-lg object-cover ring-2 ring-background shadow-sm outline outline-border/60"
             />
           ) : (
-            <div className="flex h-22 w-18 shrink-0 items-center justify-center rounded-lg bg-info/10 text-info ring-2 ring-background outline outline-border/60">
+            <div className="flex h-22 w-18 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary ring-2 ring-background outline outline-border/60">
               <UserRound className="size-6" />
             </div>
           )}

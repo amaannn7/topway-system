@@ -11,7 +11,7 @@ export function ApplicantCard({ applicant }: { applicant: AgentApplicantView }) 
   const done = applicant.pipelineSteps.filter((s) => s.completed).length;
 
   return (
-    <Card className="flex flex-col overflow-hidden shadow-sm transition-shadow hover:shadow-md">
+    <Card className="flex flex-col overflow-hidden shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md">
       <Link href={`/agent/applicants/${applicant.id}`} className="flex flex-1 flex-col">
         <div className="flex h-44 items-center justify-center bg-muted">
           {applicant.headshotUrl ? (
@@ -23,7 +23,9 @@ export function ApplicantCard({ applicant }: { applicant: AgentApplicantView }) 
               className="h-full w-full object-cover"
             />
           ) : (
-            <UserRound className="size-10 text-muted-foreground/50" />
+            <div className="flex size-14 items-center justify-center rounded-full bg-primary/10 text-primary">
+              <UserRound className="size-7" />
+            </div>
           )}
         </div>
         <div className="flex flex-1 flex-col gap-1.5 p-4">

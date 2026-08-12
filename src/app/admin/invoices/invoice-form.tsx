@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { toast } from "sonner";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, FileText, Building2, Users2, Wallet, Landmark, MapPin } from "lucide-react";
 import { invoiceFormSchema, type InvoiceFormValues } from "@/lib/validations/invoice";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -35,6 +35,25 @@ function FieldGroup({ label, children, className }: { label: string; children: R
       </Label>
       {children}
     </div>
+  );
+}
+
+function SectionHeader({
+  icon: Icon,
+  title,
+  className,
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  title: string;
+  className?: string;
+}) {
+  return (
+    <CardHeader className="flex flex-row items-center gap-3 space-y-0">
+      <div className={`flex size-9 shrink-0 items-center justify-center rounded-lg ${className ?? "bg-primary/10 text-primary"}`}>
+        <Icon className="size-4.5" />
+      </div>
+      <CardTitle>{title}</CardTitle>
+    </CardHeader>
   );
 }
 
@@ -131,10 +150,8 @@ export function InvoiceForm({
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>Invoice details</CardTitle>
-        </CardHeader>
+      <Card className="shadow-sm">
+        <SectionHeader icon={FileText} title="Invoice details" className="bg-primary/10 text-primary" />
         <CardContent className="flex flex-wrap gap-4">
           <FieldGroup label="Invoice no.">
             <Input placeholder="01" {...register("invoiceNo")} />
@@ -162,10 +179,8 @@ export function InvoiceForm({
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Bill to</CardTitle>
-        </CardHeader>
+      <Card className="shadow-sm">
+        <SectionHeader icon={Building2} title="Bill to" className="bg-primary/10 text-primary" />
         <CardContent className="flex flex-col gap-4">
           {agents.length > 0 && (
             <FieldGroup label="Select agent (optional, autofills fields below)">
@@ -214,10 +229,8 @@ export function InvoiceForm({
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Services / workers</CardTitle>
-        </CardHeader>
+      <Card className="shadow-sm">
+        <SectionHeader icon={Users2} title="Services / workers" className="bg-info/10 text-info" />
         <CardContent className="flex flex-col gap-4">
           <FieldGroup label="Service type">
             <Input {...register("serviceType")} />
@@ -297,10 +310,8 @@ export function InvoiceForm({
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Payment summary</CardTitle>
-        </CardHeader>
+      <Card className="shadow-sm">
+        <SectionHeader icon={Wallet} title="Payment summary" className="bg-success/15 text-success" />
         <CardContent className="flex flex-wrap gap-4">
           <FieldGroup label="Total amount shown on invoice">
             <Input type="number" min={0} step="0.01" {...register("total")} />
@@ -325,10 +336,8 @@ export function InvoiceForm({
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Bank details</CardTitle>
-        </CardHeader>
+      <Card className="shadow-sm">
+        <SectionHeader icon={Landmark} title="Bank details" className="bg-info/10 text-info" />
         <CardContent className="flex flex-wrap gap-4">
           <FieldGroup label="Bank name">
             <Input {...register("bankName")} />
@@ -350,10 +359,8 @@ export function InvoiceForm({
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Topway footer details</CardTitle>
-        </CardHeader>
+      <Card className="shadow-sm">
+        <SectionHeader icon={MapPin} title="Topway footer details" className="bg-muted text-foreground" />
         <CardContent className="flex flex-wrap gap-4">
           <FieldGroup label="Email">
             <Input {...register("footerEmail")} />

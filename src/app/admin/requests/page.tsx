@@ -21,16 +21,21 @@ export default async function AdminRequestsPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Requests</h1>
-        <p className="text-sm text-muted-foreground">
-          Profiles that agents have asked to access via Browse &amp; Request.
-        </p>
+      <div className="flex items-center gap-3.5 rounded-2xl bg-gradient-to-br from-primary/10 via-primary/5 to-transparent p-5 ring-1 ring-primary/10">
+        <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary/15 text-primary ring-1 ring-primary/10">
+          <Inbox className="size-5" />
+        </div>
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight">Requests</h1>
+          <p className="text-sm text-muted-foreground">
+            Profiles that agents have asked to access via Browse &amp; Request.
+          </p>
+        </div>
       </div>
 
       {requests.length === 0 ? (
         <Card className="flex flex-col items-center gap-2 py-16 text-center text-sm text-muted-foreground shadow-sm">
-          <div className="flex size-14 items-center justify-center rounded-full bg-warning/15 text-warning-foreground">
+          <div className="flex size-14 items-center justify-center rounded-full bg-primary/10 text-primary">
             <Inbox className="size-6" />
           </div>
           <p>No pending requests.</p>

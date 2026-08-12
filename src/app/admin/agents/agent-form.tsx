@@ -17,6 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Building2, KeyRound } from "lucide-react";
 import { createAgent, updateAgent } from "./actions";
 
 function FieldGroup({ label, children }: { label: string; children: React.ReactNode }) {
@@ -27,6 +28,25 @@ function FieldGroup({ label, children }: { label: string; children: React.ReactN
       </Label>
       {children}
     </div>
+  );
+}
+
+function SectionHeader({
+  icon: Icon,
+  title,
+  className,
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  title: string;
+  className?: string;
+}) {
+  return (
+    <CardHeader className="flex flex-row items-center gap-3 space-y-0">
+      <div className={`flex size-9 shrink-0 items-center justify-center rounded-lg ${className ?? "bg-primary/10 text-primary"}`}>
+        <Icon className="size-4.5" />
+      </div>
+      <CardTitle>{title}</CardTitle>
+    </CardHeader>
   );
 }
 
@@ -73,10 +93,8 @@ export function AgentForm({
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>Agency details</CardTitle>
-        </CardHeader>
+      <Card className="shadow-sm">
+        <SectionHeader icon={Building2} title="Agency details" className="bg-primary/10 text-primary" />
         <CardContent className="flex flex-wrap gap-4">
           <FieldGroup label="Contact name">
             <Input placeholder="e.g. Mohammed Al-Hassan" {...register("name")} />
@@ -113,10 +131,8 @@ export function AgentForm({
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Login credentials</CardTitle>
-        </CardHeader>
+      <Card className="shadow-sm">
+        <SectionHeader icon={KeyRound} title="Login credentials" className="bg-info/10 text-info" />
         <CardContent className="flex flex-wrap gap-4">
           <FieldGroup label="Username">
             <Input placeholder="e.g. alhamra" autoComplete="off" {...register("username")} />

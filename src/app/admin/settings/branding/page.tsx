@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { ImageIcon } from "lucide-react";
 import { OrgLogoPanel } from "./logo-panel";
 import { OrgDefaultsForm } from "./org-defaults-form";
 
@@ -8,13 +9,18 @@ export default async function BrandingSettingsPage() {
 
   return (
     <div className="flex flex-col gap-4">
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-sm">Shared logo</CardTitle>
-          <CardDescription>
-            Used on applicant PDFs when no specific agent logo applies. Replaces the old
-            trick of storing this as a fake applicant record.
-          </CardDescription>
+      <Card className="shadow-sm">
+        <CardHeader className="flex flex-row items-center gap-3 space-y-0">
+          <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+            <ImageIcon className="size-4.5" />
+          </div>
+          <div>
+            <CardTitle className="text-sm">Shared logo</CardTitle>
+            <CardDescription>
+              Used on applicant PDFs when no specific agent logo applies. Replaces the old
+              trick of storing this as a fake applicant record.
+            </CardDescription>
+          </div>
         </CardHeader>
         <CardContent>
           <OrgLogoPanel logoUrl={settings?.headerLogoUrl ?? null} />

@@ -94,7 +94,7 @@ export function AgentLoginForm({
           placeholder="Username"
           autoComplete="username"
           required
-          className={cn(fieldInputClass, "focus-visible:ring-purple/30")}
+          className={cn(fieldInputClass, "focus-visible:ring-primary/30")}
         />
       </div>
       <div className="relative">
@@ -108,7 +108,7 @@ export function AgentLoginForm({
           placeholder="Password"
           autoComplete="current-password"
           required
-          className={cn(fieldInputClass, "focus-visible:ring-purple/30")}
+          className={cn(fieldInputClass, "focus-visible:ring-primary/30")}
         />
       </div>
       {state.error && (
@@ -119,7 +119,7 @@ export function AgentLoginForm({
       <Button
         type="submit"
         size="lg"
-        className="mt-2 h-11 w-full rounded-xl bg-purple text-base text-purple-foreground shadow-sm hover:bg-purple/85"
+        className="mt-2 h-11 w-full rounded-xl bg-primary text-base text-primary-foreground shadow-sm hover:bg-primary/85"
         disabled={pending}
       >
         {pending ? "Signing in…" : "Sign in"}
@@ -128,7 +128,7 @@ export function AgentLoginForm({
   );
 }
 
-// Same purple accent as AgentLoginForm — a customer is downstream of one
+// Same primary accent as AgentLoginForm — a customer is downstream of one
 // sponsoring agent, so it shares that portal's identity color rather than
 // introducing a fourth hue.
 export function CustomerLoginForm({
@@ -151,7 +151,7 @@ export function CustomerLoginForm({
           placeholder="Username"
           autoComplete="username"
           required
-          className={cn(fieldInputClass, "focus-visible:ring-purple/30")}
+          className={cn(fieldInputClass, "focus-visible:ring-primary/30")}
         />
       </div>
       <div className="relative">
@@ -165,7 +165,7 @@ export function CustomerLoginForm({
           placeholder="Password"
           autoComplete="current-password"
           required
-          className={cn(fieldInputClass, "focus-visible:ring-purple/30")}
+          className={cn(fieldInputClass, "focus-visible:ring-primary/30")}
         />
       </div>
       {state.error && (
@@ -176,7 +176,7 @@ export function CustomerLoginForm({
       <Button
         type="submit"
         size="lg"
-        className="mt-2 h-11 w-full rounded-xl bg-purple text-base text-purple-foreground shadow-sm hover:bg-purple/85"
+        className="mt-2 h-11 w-full rounded-xl bg-primary text-base text-primary-foreground shadow-sm hover:bg-primary/85"
         disabled={pending}
       >
         {pending ? "Signing in…" : "Sign in"}

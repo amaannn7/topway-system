@@ -12,7 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import { STATUS_LABEL } from "@/lib/pipeline-status";
+import { STATUS_LABEL, LIFECYCLE_STATUS_LABEL } from "@/lib/pipeline-status";
 import { WORKER_CATEGORY_LABELS, EXPERIENCE_TYPE_LABELS } from "@/lib/constants/applicant";
 
 const CATEGORY_PILLS = [
@@ -40,7 +40,7 @@ export function ApplicantsToolbar({ nationalities }: { nationalities: string[] }
   const activeCategory = searchParams.get("category") ?? "";
 
   return (
-    <div className="flex flex-col gap-4 rounded-xl border border-t-2 border-t-info bg-card p-5 shadow-sm">
+    <div className="flex flex-col gap-4 rounded-xl border border-t-2 border-t-primary bg-card p-5 shadow-sm">
       <div className="flex flex-wrap items-center gap-2">
         {CATEGORY_PILLS.map((pill) => (
           <button
@@ -115,6 +115,23 @@ export function ApplicantsToolbar({ nationalities }: { nationalities: string[] }
             {nationalities.map((n) => (
               <SelectItem key={n} value={n}>
                 {n}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <Select
+          value={searchParams.get("lifecycle") ?? "ALL"}
+          onValueChange={(v) => setParam("lifecycle", v === "ALL" || !v ? "" : v)}
+        >
+          <SelectTrigger className="w-44">
+            <SelectValue placeholder="Contract stage" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="ALL">All contract stages</SelectItem>
+            {Object.entries(LIFECYCLE_STATUS_LABEL).map(([value, label]) => (
+              <SelectItem key={value} value={value}>
+                {label}
               </SelectItem>
             ))}
           </SelectContent>

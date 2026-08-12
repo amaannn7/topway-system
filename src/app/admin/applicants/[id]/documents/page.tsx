@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { FolderOpen } from "lucide-react";
 import { DocumentsPanel } from "./documents-panel";
 
 export default async function ApplicantDocumentsPage({
@@ -21,14 +22,19 @@ export default async function ApplicantDocumentsPage({
   const alteration = applicant.documents.find((d) => d.kind === "ALTERATION_PAGE");
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-sm">Photos &amp; identity documents</CardTitle>
-        <CardDescription>
-          Passport and alteration page are visible to the assigned agent only once this
-          candidate is marked <strong>confirmed</strong> on the pipeline tab. Currently{" "}
-          {applicant.confirmed ? "confirmed" : "not confirmed"}.
-        </CardDescription>
+    <Card className="shadow-sm">
+      <CardHeader className="flex flex-row items-center gap-3 space-y-0">
+        <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-info/10 text-info">
+          <FolderOpen className="size-4.5" />
+        </div>
+        <div>
+          <CardTitle className="text-sm">Photos &amp; identity documents</CardTitle>
+          <CardDescription>
+            Passport and alteration page are visible to the assigned agent only once this
+            candidate is marked <strong>confirmed</strong> on the pipeline tab. Currently{" "}
+            {applicant.confirmed ? "confirmed" : "not confirmed"}.
+          </CardDescription>
+        </div>
       </CardHeader>
       <CardContent>
         <DocumentsPanel

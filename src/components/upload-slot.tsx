@@ -54,9 +54,11 @@ export function UploadSlot({
       </label>
       <div
         className={cn(
-          "relative flex w-full max-w-48 cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed text-center text-xs text-muted-foreground transition-colors",
+          "relative flex w-full max-w-48 cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed text-center text-xs text-muted-foreground shadow-xs transition-all",
           aspectClassName,
-          dragActive ? "border-primary bg-primary/5" : "border-border hover:border-primary/50",
+          dragActive
+            ? "border-primary bg-primary/5 shadow-sm"
+            : "border-border bg-muted/20 hover:border-primary/50 hover:bg-muted/40",
           pending && "pointer-events-none opacity-60"
         )}
         onClick={() => inputRef.current?.click()}

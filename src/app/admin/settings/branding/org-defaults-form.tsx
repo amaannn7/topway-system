@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { FileText, Phone, Landmark } from "lucide-react";
 import { saveOrgDefaults } from "./actions";
 
 function FieldGroup({ label, children }: { label: string; children: React.ReactNode }) {
@@ -19,6 +20,30 @@ function FieldGroup({ label, children }: { label: string; children: React.ReactN
       </Label>
       {children}
     </div>
+  );
+}
+
+function SectionHeader({
+  icon: Icon,
+  title,
+  description,
+  className,
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  title: string;
+  description: string;
+  className?: string;
+}) {
+  return (
+    <CardHeader className="flex flex-row items-center gap-3 space-y-0">
+      <div className={`flex size-9 shrink-0 items-center justify-center rounded-lg ${className ?? "bg-primary/10 text-primary"}`}>
+        <Icon className="size-4.5" />
+      </div>
+      <div>
+        <CardTitle className="text-sm">{title}</CardTitle>
+        <CardDescription>{description}</CardDescription>
+      </div>
+    </CardHeader>
   );
 }
 
@@ -42,11 +67,13 @@ export function OrgDefaultsForm({ defaultValues }: { defaultValues: OrgDefaultsV
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-sm">Applicant PDF footer</CardTitle>
-          <CardDescription>Default footer lines for candidate profile PDFs.</CardDescription>
-        </CardHeader>
+      <Card className="shadow-sm">
+        <SectionHeader
+          icon={FileText}
+          title="Applicant PDF footer"
+          description="Default footer lines for candidate profile PDFs."
+          className="bg-info/10 text-info"
+        />
         <CardContent className="flex flex-col gap-3">
           <Input placeholder="Line 1" {...register("defaultFooterLine1")} />
           <Input placeholder="Line 2 (optional)" {...register("defaultFooterLine2")} />
@@ -54,11 +81,13 @@ export function OrgDefaultsForm({ defaultValues }: { defaultValues: OrgDefaultsV
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-sm">Invoice footer contact</CardTitle>
-          <CardDescription>Shown at the bottom of every generated invoice.</CardDescription>
-        </CardHeader>
+      <Card className="shadow-sm">
+        <SectionHeader
+          icon={Phone}
+          title="Invoice footer contact"
+          description="Shown at the bottom of every generated invoice."
+          className="bg-amber/15 text-amber-foreground"
+        />
         <CardContent className="flex flex-wrap gap-4">
           <FieldGroup label="Email">
             <Input {...register("invoiceFooterEmail")} />
@@ -80,11 +109,13 @@ export function OrgDefaultsForm({ defaultValues }: { defaultValues: OrgDefaultsV
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-sm">Default bank details</CardTitle>
-          <CardDescription>Prefilled on every new invoice; can still be edited per invoice.</CardDescription>
-        </CardHeader>
+      <Card className="shadow-sm">
+        <SectionHeader
+          icon={Landmark}
+          title="Default bank details"
+          description="Prefilled on every new invoice; can still be edited per invoice."
+          className="bg-primary/10 text-primary"
+        />
         <CardContent className="flex flex-wrap gap-4">
           <FieldGroup label="Bank name">
             <Input {...register("defaultBankName")} />

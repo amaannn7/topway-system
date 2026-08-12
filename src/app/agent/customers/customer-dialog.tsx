@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Plus, Pencil } from "lucide-react";
 import { customerFormSchema, type CustomerFormValues } from "@/lib/validations/customer";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -19,16 +19,31 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { cn } from "@/lib/utils";
 import { createCustomer, updateCustomer } from "./actions";
 
+// Trigger is styled via `buttonVariants` classes applied straight to
+// DialogTrigger's native <button> rather than nesting a <Button> through
+// `render` — see PdfPreviewDialog's comment: two styled primitives each
+// stamping their own `data-slot` onto the same node breaks the trigger.
 export function CustomerDialog({
   customerId,
   defaultValues,
-  trigger,
+  triggerVariant = "default",
+  triggerSize = "lg",
+  triggerClassName,
+  triggerLabel = "Add customer",
+  triggerIconOnly = false,
+  triggerAriaLabel,
 }: {
   customerId?: string;
   defaultValues?: Partial<CustomerFormValues>;
-  trigger?: React.ReactElement;
+  triggerVariant?: React.ComponentProps<typeof Button>["variant"];
+  triggerSize?: React.ComponentProps<typeof Button>["size"];
+  triggerClassName?: string;
+  triggerLabel?: string;
+  triggerIconOnly?: boolean;
+  triggerAriaLabel?: string;
 }) {
   const [open, setOpen] = useState(false);
   const router = useRouter();
@@ -68,15 +83,12 @@ export function CustomerDialog({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger
-        render={
-          trigger ?? (
-            <Button size="lg" className="rounded-full px-4">
-              <Plus className="size-4" />
-              Add customer
-            </Button>
-          )
-        }
-      />
+        className={cn(buttonVariants({ variant: triggerVariant, size: triggerSize }), triggerClassName)}
+        aria-label={triggerIconOnly ? (triggerAriaLabel ?? triggerLabel) : undefined}
+      >
+        {customerId ? <Pencil className="size-4" /> : <Plus className="size-4" />}
+        {!triggerIconOnly && triggerLabel}
+      </DialogTrigger>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{customerId ? "Edit customer" : "Add customer account"}</DialogTitle>
@@ -127,13 +139,5 @@ export function CustomerDialog({
         </form>
       </DialogContent>
     </Dialog>
-  );
-}
-
-export function EditCustomerTrigger() {
-  return (
-    <Button variant="ghost" size="icon" aria-label="Edit customer">
-      <Pencil className="size-4" />
-    </Button>
   );
 }

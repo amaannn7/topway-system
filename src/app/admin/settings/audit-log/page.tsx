@@ -71,14 +71,19 @@ export default async function AuditLogPage({
       </div>
 
       {entries.length === 0 ? (
-        <Card className="flex flex-col items-center gap-2 py-16 text-center text-sm text-muted-foreground">
-          <ScrollText className="size-8 opacity-40" />
+        <Card className="flex flex-col items-center gap-2 py-16 text-center text-sm text-muted-foreground shadow-sm">
+          <div className="flex size-14 items-center justify-center rounded-full bg-muted text-muted-foreground">
+            <ScrollText className="size-6" />
+          </div>
           <p>No activity recorded yet.</p>
         </Card>
       ) : (
         <div className="flex flex-col gap-1.5">
           {entries.map((entry) => (
-            <Card key={entry.id} className="flex flex-row items-center gap-3 px-4 py-2.5">
+            <Card
+              key={entry.id}
+              className="flex flex-row items-center gap-3 px-4 py-2.5 shadow-sm transition-shadow hover:shadow-md"
+            >
               <Badge
                 variant="outline"
                 className={`shrink-0 border font-medium ${ACTION_STYLES[entry.action] ?? ""}`}

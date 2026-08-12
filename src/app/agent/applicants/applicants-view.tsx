@@ -14,13 +14,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  Table,
   TableBody,
   TableCell,
   TableHead,
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { STATUS_LABEL, delaySeverity, type DerivedStatus, type DelaySeverity } from "@/lib/pipeline-status";
 import { EXPERIENCE_TYPE_LABELS, PIPELINE_STEPS } from "@/lib/constants/applicant";
@@ -156,22 +156,17 @@ export function ApplicantsView({ applicants }: { applicants: AgentApplicantView[
           ))}
         </div>
       ) : (
-        <div className="overflow-hidden rounded-xl border bg-card shadow-sm">
-          <div className="overflow-x-auto">
-            <Table>
+        <div className="isolate max-h-[calc(100vh-16rem)] overflow-auto rounded-xl border bg-card shadow-sm">
+          <table className="w-full caption-bottom text-sm">
               <TableHeader>
-                <TableRow className="border-b-2 border-b-purple/15 bg-purple/5 hover:bg-purple/5 [&_th]:h-11 [&_th]:text-[0.7rem] [&_th]:font-semibold [&_th]:tracking-wide [&_th]:text-muted-foreground [&_th]:uppercase">
+                <TableRow className="sticky top-0 z-1 border-b-2 border-b-primary/15 bg-[color-mix(in_oklch,var(--primary)_6%,var(--card))] shadow-sm hover:bg-[color-mix(in_oklch,var(--primary)_6%,var(--card))] [&_th]:h-11 [&_th]:text-[0.7rem] [&_th]:font-semibold [&_th]:tracking-wide [&_th]:text-muted-foreground [&_th]:uppercase">
                   <TableHead className="w-[62px] pl-5"></TableHead>
                   <TableHead>Name</TableHead>
                   <TableHead>Role</TableHead>
                   <TableHead>Experience</TableHead>
                   <TableHead>Musaned</TableHead>
                   <TableHead>Delay</TableHead>
-                  {PIPELINE_STEPS.map((step) => (
-                    <TableHead key={step.key} className="w-11 text-center" title={step.label}>
-                      {step.label.slice(0, 3)}
-                    </TableHead>
-                  ))}
+                  <TableHead className="w-28">Progress</TableHead>
                   <TableHead>Ticket</TableHead>
                   <TableHead className="pr-5">Saudi Visa</TableHead>
                   <TableHead className="pr-5">Status</TableHead>
@@ -198,7 +193,7 @@ export function ApplicantsView({ applicants }: { applicants: AgentApplicantView[
                             className="size-10 rounded-full object-cover ring-2 ring-background shadow-sm outline outline-border/60"
                           />
                         ) : (
-                          <div className="flex size-10 items-center justify-center rounded-full bg-purple/10 text-purple ring-2 ring-background outline outline-border/60">
+                          <div className="flex size-10 items-center justify-center rounded-full bg-primary/10 text-primary ring-2 ring-background outline outline-border/60">
                             <UserRound className="size-4" />
                           </div>
                         )}
@@ -230,22 +225,39 @@ export function ApplicantsView({ applicants }: { applicants: AgentApplicantView[
                           {days !== null ? `${days}d` : "–"}
                         </span>
                       </TableCell>
-                      {PIPELINE_STEPS.map((step) => {
-                        const done = completedSteps.has(step.key);
-                        return (
-                          <TableCell key={step.key} className="text-center" title={step.label}>
-                            {done ? (
-                              <span className="inline-flex size-5.5 items-center justify-center rounded-full bg-success/15 text-success">
-                                <Check className="size-3" />
-                              </span>
-                            ) : (
-                              <span className="inline-flex size-5.5 items-center justify-center rounded-full bg-muted/70 text-muted-foreground/40">
-                                <span className="size-1 rounded-full bg-current" />
-                              </span>
-                            )}
-                          </TableCell>
-                        );
-                      })}
+                      <TableCell onClick={(e) => e.stopPropagation()}>
+                        <Tooltip>
+                          <TooltipTrigger
+                            className="flex w-full items-center gap-2"
+                            onClick={() => router.push(`/agent/applicants/${a.id}`)}
+                          >
+                            <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-muted">
+                              <div
+                                className="h-full rounded-full bg-success"
+                                style={{ width: `${(completedSteps.size / PIPELINE_STEPS.length) * 100}%` }}
+                              />
+                            </div>
+                            <span className="shrink-0 text-xs font-medium text-muted-foreground tabular-nums">
+                              {completedSteps.size}/{PIPELINE_STEPS.length}
+                            </span>
+                          </TooltipTrigger>
+                          <TooltipContent side="bottom" align="start" className="flex-col items-start gap-1 py-2">
+                            {PIPELINE_STEPS.map((step) => {
+                              const done = completedSteps.has(step.key);
+                              return (
+                                <span key={step.key} className="flex items-center gap-1.5">
+                                  {done ? (
+                                    <Check className="size-3 text-success" />
+                                  ) : (
+                                    <span className="size-3 shrink-0 rounded-full border border-background/40" />
+                                  )}
+                                  {step.label}
+                                </span>
+                              );
+                            })}
+                          </TooltipContent>
+                        </Tooltip>
+                      </TableCell>
                       <TableCell className="text-muted-foreground text-xs whitespace-nowrap">
                         {fmtShortDate(a.ticketDate)}
                       </TableCell>
@@ -259,8 +271,7 @@ export function ApplicantsView({ applicants }: { applicants: AgentApplicantView[
                   );
                 })}
               </TableBody>
-            </Table>
-          </div>
+          </table>
         </div>
       )}
     </div>

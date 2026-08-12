@@ -3,13 +3,17 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { Bell } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { signOutAction } from "@/app/actions";
@@ -67,6 +71,7 @@ export function AgentTopbar({
           )}
           <span className="hidden text-sm font-medium sm:inline">{company}</span>
         </Link>
+        <div className="hidden h-5 w-px bg-border md:block" aria-hidden />
 
         <nav className="flex items-center gap-1">
           {navItems.map((item) => {
@@ -78,7 +83,7 @@ export function AgentTopbar({
                 className={cn(
                   "rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors",
                   active
-                    ? "bg-purple/10 text-purple"
+                    ? "bg-primary/10 text-primary"
                     : "text-muted-foreground hover:bg-muted hover:text-foreground"
                 )}
               >
@@ -90,12 +95,22 @@ export function AgentTopbar({
 
         <div className="flex-1" />
 
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label="Notifications"
+          className="relative rounded-full hover:bg-muted"
+        >
+          <Bell className="size-4" />
+        </Button>
+        <div className="h-6 w-px bg-border" aria-hidden />
+
         <DropdownMenu>
           <DropdownMenuTrigger
             render={
               <Button variant="ghost" className="gap-2 rounded-full px-2 hover:bg-muted">
                 <Avatar className="size-7 ring-2 ring-background shadow-sm">
-                  <AvatarFallback className="bg-purple text-xs font-medium text-purple-foreground">
+                  <AvatarFallback className="bg-gradient-to-br from-primary to-primary/70 text-xs font-medium text-primary-foreground">
                     {initials(name)}
                   </AvatarFallback>
                 </Avatar>
@@ -103,7 +118,14 @@ export function AgentTopbar({
               </Button>
             }
           />
-          <DropdownMenuContent align="end" className="w-44">
+          <DropdownMenuContent align="end" className="w-52">
+            <DropdownMenuGroup>
+              <DropdownMenuLabel className="flex flex-col gap-0.5">
+                <span className="text-sm font-medium text-foreground">{name}</span>
+                <span className="text-xs font-normal text-muted-foreground">{company}</span>
+              </DropdownMenuLabel>
+            </DropdownMenuGroup>
+            <DropdownMenuSeparator />
             <DropdownMenuItem
               render={
                 <form action={signOutAction} className="w-full">

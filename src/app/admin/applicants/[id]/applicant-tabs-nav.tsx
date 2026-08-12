@@ -17,7 +17,7 @@ export function ApplicantTabsNav({ applicantId }: { applicantId: string }) {
   const base = `/admin/applicants/${applicantId}`;
 
   return (
-    <nav className="flex gap-1 border-b">
+    <nav className="flex gap-1 rounded-xl bg-muted/50 p-1">
       {TABS.map((tab) => {
         const href = tab.segment ? `${base}/${tab.segment}` : base;
         const active = pathname === href;
@@ -26,10 +26,10 @@ export function ApplicantTabsNav({ applicantId }: { applicantId: string }) {
             key={tab.segment}
             href={href}
             className={cn(
-              "border-b-2 px-3 py-2 text-sm font-medium transition-colors",
+              "rounded-lg px-3.5 py-1.5 text-sm font-medium transition-colors",
               active
-                ? "border-primary text-foreground"
-                : "border-transparent text-muted-foreground hover:text-foreground"
+                ? "bg-card text-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground"
             )}
           >
             {tab.label}

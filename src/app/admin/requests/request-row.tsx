@@ -37,7 +37,7 @@ export function RequestRow({
   }
 
   return (
-    <div className="flex items-center gap-3 rounded-lg border border-l-4 border-l-warning bg-card px-4 py-3 shadow-sm">
+    <div className="flex items-center gap-3 rounded-lg border border-l-4 border-l-primary bg-gradient-to-r from-primary/5 to-transparent px-4 py-3 shadow-sm transition-shadow hover:shadow-md">
       {request.headshotUrl ? (
         <Image
           src={request.headshotUrl}

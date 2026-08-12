@@ -60,15 +60,17 @@ export function DisputeReportForm({ applicantId }: { applicantId: string }) {
   }
 
   return (
-    <Card className="border-l-4 border-l-destructive/60">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-sm">
-          <AlertTriangle className="size-4 text-destructive" />
-          Report an issue
-        </CardTitle>
-        <CardDescription>
-          Let Topway know if this candidate needs a change of employer or house.
-        </CardDescription>
+    <Card className="border-l-4 border-l-destructive/60 bg-gradient-to-br from-destructive/5 to-transparent shadow-sm">
+      <CardHeader className="flex flex-row items-center gap-3 space-y-0">
+        <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-destructive/10 text-destructive">
+          <AlertTriangle className="size-4" />
+        </div>
+        <div>
+          <CardTitle className="text-sm">Report an issue</CardTitle>
+          <CardDescription>
+            Let Topway know if this candidate needs a change of employer or house.
+          </CardDescription>
+        </div>
       </CardHeader>
       <CardContent className="flex flex-col gap-3">
         {submitted && (

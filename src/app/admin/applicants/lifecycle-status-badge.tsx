@@ -6,7 +6,7 @@ const LIFECYCLE_STATUS_STYLES: Record<LifecycleStatus, string> = {
   NOT_DEPARTED: "bg-muted text-muted-foreground border-transparent",
   PROBATION_PROGRESS: "bg-warning/15 text-warning-foreground border-warning/30",
   PROBATION_COMPLETE: "bg-info/10 text-info border-info/25",
-  MID_CONTRACT: "bg-purple/10 text-purple border-purple/25",
+  MID_CONTRACT: "bg-primary/10 text-primary border-primary/25",
   CONTRACT_COMPLETE: "bg-success/15 text-success border-success/30",
 };
 

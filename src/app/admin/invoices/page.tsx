@@ -45,7 +45,7 @@ export default async function AdminInvoicesPage() {
 
       {invoices.length === 0 ? (
         <Card className="flex flex-col items-center gap-2 py-16 text-center text-sm text-muted-foreground shadow-sm">
-          <div className="flex size-14 items-center justify-center rounded-full bg-amber/15 text-amber-foreground">
+          <div className="flex size-14 items-center justify-center rounded-full bg-primary/10 text-primary">
             <Receipt className="size-6" />
           </div>
           <p>No invoices yet. Create your first one.</p>
@@ -55,10 +55,10 @@ export default async function AdminInvoicesPage() {
           {invoices.map((inv) => (
             <Card
               key={inv.id}
-              className="flex flex-row items-center gap-5 border-l-4 border-l-amber p-5 shadow-sm transition-shadow hover:shadow-md"
+              className="flex flex-row items-center gap-5 overflow-hidden border-l-4 border-l-primary bg-gradient-to-r from-primary/5 to-transparent p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
             >
-              <div className="flex size-12 shrink-0 flex-col items-center justify-center rounded-xl bg-amber/15">
-                <p className="text-sm font-bold text-amber-foreground tabular-nums">#{inv.invoiceNo}</p>
+              <div className="flex size-12 shrink-0 flex-col items-center justify-center rounded-xl bg-primary/15 shadow-sm ring-1 ring-primary/10">
+                <p className="text-sm font-bold text-primary tabular-nums">#{inv.invoiceNo}</p>
               </div>
               <div className="min-w-0 flex-1">
                 <p className="truncate font-semibold">

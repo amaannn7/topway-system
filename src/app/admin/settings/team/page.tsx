@@ -2,9 +2,19 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Users } from "lucide-react";
-import { AdminUserDialog, EditAdminUserTrigger } from "./admin-user-dialog";
+import { AdminUserDialog } from "./admin-user-dialog";
 import { DeleteAdminUserButton } from "./delete-admin-user-button";
+
+function initials(name: string) {
+  return name
+    .split(" ")
+    .map((p) => p[0])
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
+}
 
 export default async function TeamSettingsPage() {
   const session = await auth();
@@ -15,7 +25,7 @@ export default async function TeamSettingsPage() {
   if (!isOwner) {
     return (
       <Card className="flex flex-col items-center gap-2 py-16 text-center text-sm text-muted-foreground shadow-sm">
-        <div className="flex size-14 items-center justify-center rounded-full bg-purple/10 text-purple">
+        <div className="flex size-14 items-center justify-center rounded-full bg-primary/10 text-primary">
           <Users className="size-6" />
         </div>
         <p>Only owners can manage team accounts.</p>
@@ -26,11 +36,25 @@ export default async function TeamSettingsPage() {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex justify-end">
-        <AdminUserDialog />
+        <AdminUserDialog triggerClassName="rounded-full px-4 shadow-sm" />
       </div>
       <div className="flex flex-col gap-2">
         {users.map((u) => (
-          <Card key={u.id} className="flex flex-row items-center gap-3 p-3 shadow-sm">
+          <Card
+            key={u.id}
+            className="flex flex-row items-center gap-3 p-3 shadow-sm transition-shadow hover:shadow-md"
+          >
+            <Avatar className="size-9 shrink-0 shadow-sm ring-2 ring-background">
+              <AvatarFallback
+                className={
+                  u.role === "OWNER"
+                    ? "bg-gradient-to-br from-primary to-primary/70 text-xs font-medium text-primary-foreground"
+                    : "bg-gradient-to-br from-primary to-secondary text-xs font-medium text-primary-foreground"
+                }
+              >
+                {initials(u.name)}
+              </AvatarFallback>
+            </Avatar>
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
                 <p className="truncate font-medium">{u.name}</p>
@@ -38,7 +62,7 @@ export default async function TeamSettingsPage() {
                   variant="outline"
                   className={
                     u.role === "OWNER"
-                      ? "border-purple/25 bg-purple/10 text-xs text-purple"
+                      ? "border-primary/25 bg-primary/10 text-xs text-primary"
                       : "text-xs"
                   }
                 >
@@ -65,7 +89,10 @@ export default async function TeamSettingsPage() {
                 active: u.active,
                 canViewPayments: u.canViewPayments,
               }}
-              trigger={<EditAdminUserTrigger />}
+              triggerVariant="ghost"
+              triggerSize="icon"
+              triggerIconOnly
+              triggerAriaLabel="Edit account"
             />
             <DeleteAdminUserButton userId={u.id} name={u.name} />
           </Card>

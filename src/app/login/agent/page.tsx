@@ -4,15 +4,15 @@ import { LogIn } from "lucide-react";
 import { agentLoginAction } from "../actions";
 import { AgentLoginForm } from "../login-form";
 
-// Agency sign-in — a separate page from /login (distinct branding: purple
+// Agency sign-in — a separate page from /login (distinct branding: primary
 // accent, matching the agent portal's own identity color; distinct
 // credential shape: agency username+password vs. staff email+password).
 export default function AgentLoginPage() {
   return (
-    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-gradient-to-b from-purple/35 via-purple/15 to-background px-4 py-12">
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-gradient-to-b from-primary/35 via-primary/15 to-background px-4 py-12">
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,color-mix(in_oklch,var(--purple),transparent_45%),transparent_60%)]"
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,color-mix(in_oklch,var(--primary),transparent_45%),transparent_60%)]"
       />
       <div className="absolute top-6 left-6 flex items-center gap-2">
         <Image
@@ -27,7 +27,7 @@ export default function AgentLoginPage() {
 
       <div className="relative w-full max-w-sm rounded-3xl bg-card/70 p-8 text-center shadow-xl ring-1 ring-foreground/10 backdrop-blur-xl">
         <div className="mx-auto mb-5 flex size-12 items-center justify-center rounded-2xl bg-gradient-to-b from-card to-muted shadow-sm ring-1 ring-foreground/10">
-          <LogIn className="size-5 text-purple" />
+          <LogIn className="size-5 text-primary" />
         </div>
         <h1 className="text-xl font-semibold tracking-tight">Agency sign in</h1>
         <p className="mt-1.5 text-sm text-muted-foreground">
@@ -45,7 +45,7 @@ export default function AgentLoginPage() {
         <div className="mt-6 border-t border-border/60 pt-4">
           <p className="text-sm text-muted-foreground">
             Topway staff?{" "}
-            <Link href="/login" className="font-medium text-purple hover:underline">
+            <Link href="/login" className="font-medium text-primary hover:underline">
               Sign in here
             </Link>
           </p>

@@ -72,12 +72,12 @@ export function AssignmentList({
               type="button"
               onClick={() => toggle(a.id)}
               className={cn(
-                "flex items-center gap-3 rounded-lg border px-3 py-2 text-left transition-colors",
+                "flex items-center gap-3 rounded-lg border px-3 py-2 text-left shadow-xs transition-all",
                 checked
-                  ? "border-purple bg-purple/5"
+                  ? "border-primary bg-primary/5 shadow-sm"
                   : a.isPending
                     ? "border-warning/40 hover:border-warning/60"
-                    : "border-border hover:border-purple/40"
+                    : "border-border hover:border-primary/40"
               )}
             >
               {a.headshotUrl ? (

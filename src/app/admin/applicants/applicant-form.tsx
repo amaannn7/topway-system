@@ -5,7 +5,19 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { toast } from "sonner";
-import { Plus, Trash2 } from "lucide-react";
+import {
+  Plus,
+  Trash2,
+  UserRound,
+  Sparkles,
+  IdCard,
+  Briefcase,
+  GraduationCap,
+  History,
+  Languages,
+  ShieldAlert,
+  FileText,
+} from "lucide-react";
 import {
   applicantFormSchema,
   type ApplicantFormValues,
@@ -97,6 +109,30 @@ function FieldGroup({
   );
 }
 
+function SectionHeader({
+  icon: Icon,
+  title,
+  description,
+  className,
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  title: string;
+  description?: string;
+  className?: string;
+}) {
+  return (
+    <CardHeader className="flex flex-row items-center gap-3 space-y-0">
+      <div className={`flex size-9 shrink-0 items-center justify-center rounded-lg ${className ?? "bg-info/10 text-info"}`}>
+        <Icon className="size-4.5" />
+      </div>
+      <div>
+        <CardTitle>{title}</CardTitle>
+        {description && <CardDescription>{description}</CardDescription>}
+      </div>
+    </CardHeader>
+  );
+}
+
 export function ApplicantForm({
   applicantId,
   defaultValues,
@@ -148,10 +184,8 @@ export function ApplicantForm({
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6">
       {/* Reference + Role */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Identity &amp; role</CardTitle>
-        </CardHeader>
+      <Card className="shadow-sm">
+        <SectionHeader icon={UserRound} title="Identity & role" className="bg-info/10 text-info" />
         <CardContent className="flex flex-wrap gap-4">
           <FieldGroup label="Reference no.">
             <Input placeholder="e.g. A 02" {...register("refNo")} />
@@ -194,10 +228,8 @@ export function ApplicantForm({
       </Card>
 
       {/* Skills */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Skills</CardTitle>
-        </CardHeader>
+      <Card className="shadow-sm">
+        <SectionHeader icon={Sparkles} title="Skills" className="bg-success/15 text-success" />
         <CardContent className="flex flex-wrap gap-x-6 gap-y-3">
           {checkbox("skillCleaning", "Cleaning")}
           {checkbox("skillWashing", "Washing")}
@@ -208,10 +240,8 @@ export function ApplicantForm({
       </Card>
 
       {/* Personal information */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Personal information</CardTitle>
-        </CardHeader>
+      <Card className="shadow-sm">
+        <SectionHeader icon={IdCard} title="Personal information" className="bg-primary/10 text-primary" />
         <CardContent className="flex flex-wrap gap-4">
           <FieldGroup label="Nationality">
             <Select
@@ -283,10 +313,8 @@ export function ApplicantForm({
       </Card>
 
       {/* Passport */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Passport details</CardTitle>
-        </CardHeader>
+      <Card className="shadow-sm">
+        <SectionHeader icon={Briefcase} title="Passport details" className="bg-amber/15 text-amber-foreground" />
         <CardContent className="flex flex-wrap gap-4">
           <FieldGroup label="Passport no.">
             <Input placeholder="e.g. N1234567" {...register("passportNo")} />
@@ -304,10 +332,8 @@ export function ApplicantForm({
       </Card>
 
       {/* Education */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Educational qualification</CardTitle>
-        </CardHeader>
+      <Card className="shadow-sm">
+        <SectionHeader icon={GraduationCap} title="Educational qualification" className="bg-info/10 text-info" />
         <CardContent className="flex flex-wrap gap-4">
           <FieldGroup label="Qualification">
             <Select
@@ -333,11 +359,13 @@ export function ApplicantForm({
       </Card>
 
       {/* Employment history */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Employment record</CardTitle>
-          <CardDescription>Previous placements abroad, if any.</CardDescription>
-        </CardHeader>
+      <Card className="shadow-sm">
+        <SectionHeader
+          icon={History}
+          title="Employment record"
+          description="Previous placements abroad, if any."
+          className="bg-amber/15 text-amber-foreground"
+        />
         <CardContent className="flex flex-col gap-3">
           {fields.map((field, i) => (
             <div key={field.id} className="flex flex-wrap items-end gap-2">
@@ -390,10 +418,8 @@ export function ApplicantForm({
       </Card>
 
       {/* Languages */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Language skills</CardTitle>
-        </CardHeader>
+      <Card className="shadow-sm">
+        <SectionHeader icon={Languages} title="Language skills" className="bg-primary/10 text-primary" />
         <CardContent>
           <div className="grid grid-cols-[auto_1fr_1fr] items-center gap-x-6 gap-y-2 text-sm">
             <div />
@@ -409,12 +435,14 @@ export function ApplicantForm({
         </CardContent>
       </Card>
 
-      {/* Internal contact — never exposed to agents */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Contact details</CardTitle>
-          <CardDescription>Internal only. Never shown to agents.</CardDescription>
-        </CardHeader>
+      {/* Internal contact, never exposed to agents */}
+      <Card className="border-warning/30 bg-warning/5 shadow-sm">
+        <SectionHeader
+          icon={ShieldAlert}
+          title="Contact details"
+          description="Internal only. Never shown to agents."
+          className="bg-warning/20 text-warning-foreground"
+        />
         <CardContent className="flex flex-wrap gap-4">
           <FieldGroup label="Phone">
             <Input placeholder="+94 77 123 4567" {...register("phone")} />
@@ -437,11 +465,13 @@ export function ApplicantForm({
       </Card>
 
       {/* PDF footer */}
-      <Card>
-        <CardHeader>
-          <CardTitle>PDF footer lines</CardTitle>
-          <CardDescription>Optional. Overrides the organization default footer.</CardDescription>
-        </CardHeader>
+      <Card className="shadow-sm">
+        <SectionHeader
+          icon={FileText}
+          title="PDF footer lines"
+          description="Optional. Overrides the organization default footer."
+          className="bg-muted text-foreground"
+        />
         <CardContent className="flex flex-col gap-3">
           <Textarea rows={1} placeholder="Line 1" {...register("footerLine1")} />
           <Textarea rows={1} placeholder="Line 2 (optional)" {...register("footerLine2")} />

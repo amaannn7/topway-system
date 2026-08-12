@@ -1,7 +1,7 @@
 import Link from "next/link";
-import { Plus } from "lucide-react";
+import { Plus, Users } from "lucide-react";
 import { prisma } from "@/lib/prisma";
-import { deriveStatus, delaySeverity } from "@/lib/pipeline-status";
+import { deriveStatus, delaySeverity, deriveLifecycleStatus } from "@/lib/pipeline-status";
 import { EXPERIENCE_TYPE_LABELS } from "@/lib/constants/applicant";
 import { Button } from "@/components/ui/button";
 import { ApplicantsToolbar } from "./applicants-toolbar";
@@ -11,9 +11,16 @@ import type { Prisma } from "@/generated/prisma/client";
 export default async function AdminApplicantsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; status?: string; category?: string; experience?: string; nationality?: string }>;
+  searchParams: Promise<{
+    q?: string;
+    status?: string;
+    category?: string;
+    experience?: string;
+    nationality?: string;
+    lifecycle?: string;
+  }>;
 }) {
-  const { q, status, category, experience, nationality } = await searchParams;
+  const { q, status, category, experience, nationality, lifecycle } = await searchParams;
 
   const where: Prisma.ApplicantWhereInput = {
     ...(q ? { name: { contains: q, mode: "insensitive" } } : {}),
@@ -50,6 +57,7 @@ export default async function AdminApplicantsPage({
     .map((a) => {
       const s = deriveStatus(a);
       const { days, severity } = delaySeverity(a.musanedDate);
+      const lc = deriveLifecycleStatus(a);
       return {
         id: a.id,
         name: a.name,
@@ -80,18 +88,25 @@ export default async function AdminApplicantsPage({
         delaySeverity: severity,
         ticketDate: a.ticketDate,
         saudiAgentVisaDate: a.saudiAgentVisaDate,
+        lifecycleStatus: lc.status,
       } satisfies ApplicantRow;
     })
-    .filter((a) => !status || a.status === status);
+    .filter((a) => !status || a.status === status)
+    .filter((a) => !lifecycle || a.lifecycleStatus === lifecycle);
 
   return (
     <div className="flex flex-col gap-5">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Applicants</h1>
-          <p className="text-sm text-muted-foreground">
-            {applicants.length} applicant{applicants.length === 1 ? "" : "s"} total
-          </p>
+      <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-gradient-to-br from-primary/10 via-primary/5 to-transparent p-5 ring-1 ring-primary/10">
+        <div className="flex items-center gap-3.5">
+          <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary/15 text-primary ring-1 ring-primary/10">
+            <Users className="size-5" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-semibold tracking-tight">Applicants</h1>
+            <p className="text-sm text-muted-foreground">
+              {applicants.length} applicant{applicants.length === 1 ? "" : "s"} total
+            </p>
+          </div>
         </div>
         <Button size="lg" className="rounded-full px-4 shadow-sm" render={<Link href="/admin/applicants/new" />}>
           <Plus className="size-4" />

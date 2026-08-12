@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Users } from "lucide-react";
 import { AssignmentList } from "./assignment-list";
 
 export default async function AgentAssignedPage({
@@ -48,12 +49,17 @@ export default async function AgentAssignedPage({
     });
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-sm">Assigned profiles</CardTitle>
-        <CardDescription>
-          Select which applicant profiles this agent can view and download.
-        </CardDescription>
+    <Card className="shadow-sm">
+      <CardHeader className="flex flex-row items-center gap-3 space-y-0">
+        <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+          <Users className="size-4.5" />
+        </div>
+        <div>
+          <CardTitle className="text-sm">Assigned profiles</CardTitle>
+          <CardDescription>
+            Select which applicant profiles this agent can view and download.
+          </CardDescription>
+        </div>
       </CardHeader>
       <CardContent>
         <AssignmentList

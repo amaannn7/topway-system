@@ -45,8 +45,9 @@ export function BrowseCard({
   return (
     <Card
       className={cn(
-        "flex flex-col overflow-hidden shadow-sm transition-shadow hover:shadow-md",
-        applicant.status === "requested" && "border-l-4 border-l-info"
+        "flex flex-col overflow-hidden shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md",
+        applicant.status === "requested" && "border-l-4 border-l-info bg-gradient-to-br from-info/5 to-transparent",
+        applicant.status === "assigned" && "border-l-4 border-l-success bg-gradient-to-br from-success/5 to-transparent"
       )}
     >
       <div className="flex h-32 items-center justify-center bg-muted">
@@ -59,7 +60,9 @@ export function BrowseCard({
             className="h-full w-full object-cover"
           />
         ) : (
-          <UserRound className="size-8 text-muted-foreground/50" />
+          <div className="flex size-12 items-center justify-center rounded-full bg-primary/10 text-primary">
+            <UserRound className="size-6" />
+          </div>
         )}
       </div>
       <div className="flex flex-1 flex-col gap-1 p-3">
