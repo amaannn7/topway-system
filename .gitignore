@@ -52,3 +52,6 @@ skills-lock.json
 # in production — see src/lib/uploads.ts)
 /public/uploads/*
 !/public/uploads/.gitkeep
+
+.vercel
+.env*.local
