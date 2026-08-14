@@ -21,12 +21,26 @@ function readLocalFile(absolutePath: string): Buffer | null {
   }
 }
 
-// Converts a public-relative upload URL (e.g. "/uploads/logos/x.png") into
-// image bytes react-pdf can embed directly. Returns null for anything that
-// isn't a local upload (missing, external URL, etc) or that fails to read.
-export function uploadPathToPdfSrc(url: string | null | undefined): Buffer | null {
-  if (!url || !url.startsWith("/uploads/")) return null;
-  return readLocalFile(path.join(process.cwd(), "public", url));
+// Uploads live on Vercel Blob in production (see src/lib/uploads.ts) and on
+// local disk under /uploads in dev. A stored URL is either an absolute
+// https:// Blob URL or a "/uploads/..." local path — this reads whichever
+// one it actually is into bytes react-pdf can embed directly. Returns null
+// for anything missing, unrecognized, or that fails to read/fetch.
+export async function uploadPathToPdfSrc(url: string | null | undefined): Promise<Buffer | null> {
+  if (!url) return null;
+  if (url.startsWith("/uploads/")) {
+    return readLocalFile(path.join(process.cwd(), "public", url));
+  }
+  if (url.startsWith("https://") || url.startsWith("http://")) {
+    try {
+      const res = await fetch(url);
+      if (!res.ok) return null;
+      return Buffer.from(await res.arrayBuffer());
+    } catch {
+      return null;
+    }
+  }
+  return null;
 }
 
 // Resolves a path under /public (e.g. "brand/topway-logo.png") into image

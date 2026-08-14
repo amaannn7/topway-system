@@ -24,8 +24,10 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
+  const logoUrl = await uploadPathToPdfSrc(settings?.headerLogoUrl);
+
   const pdfBuffer = await renderToBuffer(
-    <InvoiceDocument invoice={invoice} logoUrl={uploadPathToPdfSrc(settings?.headerLogoUrl)} />
+    <InvoiceDocument invoice={invoice} logoUrl={logoUrl} />
   );
 
   const safeCompany = invoice.billToCompany.replace(/[^a-z0-9]+/gi, "_");

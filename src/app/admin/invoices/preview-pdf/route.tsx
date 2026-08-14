@@ -63,12 +63,14 @@ export async function POST(req: Request) {
     })),
   };
 
+  const logoUrl = await uploadPathToPdfSrc(settings?.headerLogoUrl);
+
   const pdfBuffer = await renderToBuffer(
     <InvoiceDocument
       // @ts-expect-error — plain numbers stand in for Prisma.Decimal here;
       // InvoiceDocument only ever calls Number(...) on these fields.
       invoice={previewInvoice}
-      logoUrl={uploadPathToPdfSrc(settings?.headerLogoUrl)}
+      logoUrl={logoUrl}
     />
   );
 

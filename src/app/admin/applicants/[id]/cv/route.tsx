@@ -39,16 +39,22 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
   const footerLines = [org?.defaultFooterLine1, org?.defaultFooterLine2, org?.defaultFooterLine3]
     .filter((line): line is string => !!line);
 
+  const [headshotUrl, fullPhotoUrl, agencyLogoUrl] = await Promise.all([
+    uploadPathToPdfSrc(applicant.photos.find((p) => p.kind === "HEADSHOT")?.url ?? null),
+    uploadPathToPdfSrc(applicant.photos.find((p) => p.kind === "FULL_BODY")?.url ?? null),
+    uploadPathToPdfSrc(org?.headerLogoUrl ?? null),
+  ]);
+
   const pdfBuffer = await renderToBuffer(
     <CvDocument
       applicant={{
         ...applicant,
         status: deriveStatus(applicant),
-        headshotUrl: uploadPathToPdfSrc(applicant.photos.find((p) => p.kind === "HEADSHOT")?.url ?? null),
-        fullPhotoUrl: uploadPathToPdfSrc(applicant.photos.find((p) => p.kind === "FULL_BODY")?.url ?? null),
+        headshotUrl,
+        fullPhotoUrl,
         documents: [], // admin has its own Documents tab; the CV export doesn't attach them here
       }}
-      agencyLogoUrl={uploadPathToPdfSrc(org?.headerLogoUrl ?? null)}
+      agencyLogoUrl={agencyLogoUrl}
       agencyName={null}
       topwayLogoUrl={staticAssetToPdfSrc("brand/topway-logo.png")}
       footerLines={footerLines}

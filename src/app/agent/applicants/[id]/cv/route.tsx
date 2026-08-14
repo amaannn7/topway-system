@@ -30,19 +30,27 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
   // documents is already confirmed-gated by getAgentApplicant() (empty
   // array unless applicant.confirmed === true) — only image documents can
   // be embedded as extra PDF pages, see the note in lib/cv-pdf.tsx.
-  const extraImagePages = applicant.documents
-    .filter((d) => d.mimeType === "image/jpeg" || d.mimeType === "image/png")
-    .map((d) => uploadPathToPdfSrc(d.url))
-    .filter((p): p is Buffer => !!p);
+  const extraImagePagesRaw = await Promise.all(
+    applicant.documents
+      .filter((d) => d.mimeType === "image/jpeg" || d.mimeType === "image/png")
+      .map((d) => uploadPathToPdfSrc(d.url))
+  );
+  const extraImagePages = extraImagePagesRaw.filter((p): p is Buffer => !!p);
+
+  const [headshotUrl, fullPhotoUrl, agencyLogoUrl] = await Promise.all([
+    uploadPathToPdfSrc(applicant.headshotUrl),
+    uploadPathToPdfSrc(applicant.fullPhotoUrl),
+    uploadPathToPdfSrc(agent?.logoUrl ?? null),
+  ]);
 
   const pdfBuffer = await renderToBuffer(
     <CvDocument
       applicant={{
         ...applicant,
-        headshotUrl: uploadPathToPdfSrc(applicant.headshotUrl),
-        fullPhotoUrl: uploadPathToPdfSrc(applicant.fullPhotoUrl),
+        headshotUrl,
+        fullPhotoUrl,
       }}
-      agencyLogoUrl={uploadPathToPdfSrc(agent?.logoUrl ?? null)}
+      agencyLogoUrl={agencyLogoUrl}
       agencyName={agent?.company ?? null}
       topwayLogoUrl={staticAssetToPdfSrc("brand/topway-logo.png")}
       footerLines={footerLines}
