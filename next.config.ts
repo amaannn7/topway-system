@@ -14,6 +14,14 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  // sharp (used in documents/actions.ts to derive a headshot crop from the
+  // uploaded full-body photo) ships a native binary, and file-type (used in
+  // src/lib/uploads.ts to sniff real file magic bytes) is ESM-only with a
+  // WASM dependency. Both are known to fail to trace/bundle correctly for
+  // Vercel's serverless function without this — they work locally (loaded
+  // straight from node_modules, no bundling step) but throw at runtime in
+  // production.
+  serverExternalPackages: ["sharp", "file-type"],
   // Uploaded photos/documents are served from Vercel Blob in production
   // (see src/lib/uploads.ts) — next/image needs the host allow-listed to
   // optimize/serve those remote URLs. Local dev uploads stay same-origin
