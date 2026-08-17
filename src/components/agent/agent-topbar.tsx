@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Bell } from "lucide-react";
+import { Bell, LayoutDashboard, Users, Users2, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -19,9 +19,9 @@ import {
 import { signOutAction } from "@/app/actions";
 
 const NAV_ITEMS = [
-  { href: "/agent/dashboard", label: "Dashboard" },
-  { href: "/agent/applicants", label: "My Applicants" },
-  { href: "/agent/customers", label: "Customers" },
+  { href: "/agent/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/agent/applicants", label: "My Applicants", icon: Users },
+  { href: "/agent/customers", label: "Customers", icon: Users2 },
 ] as const;
 
 function initials(name: string) {
@@ -46,7 +46,7 @@ export function AgentTopbar({
 }) {
   const pathname = usePathname();
   const navItems = showBrowse
-    ? [...NAV_ITEMS, { href: "/agent/browse", label: "Browse & Request" }]
+    ? [...NAV_ITEMS, { href: "/agent/browse", label: "Browse & Request", icon: Search }]
     : NAV_ITEMS;
 
   return (
@@ -69,11 +69,10 @@ export function AgentTopbar({
               <img src={logoUrl} alt={company} className="h-6 w-auto object-contain" />
             </>
           )}
-          <span className="hidden text-sm font-medium sm:inline">{company}</span>
         </Link>
         <div className="hidden h-5 w-px bg-border md:block" aria-hidden />
 
-        <nav className="flex min-w-0 items-center gap-1 overflow-x-auto">
+        <nav className="flex items-center gap-1">
           {navItems.map((item) => {
             const active = pathname === item.href || pathname.startsWith(item.href + "/");
             return (
@@ -81,13 +80,14 @@ export function AgentTopbar({
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "shrink-0 rounded-full px-3.5 py-1.5 text-sm font-medium whitespace-nowrap transition-colors",
+                  "flex shrink-0 items-center gap-1.5 rounded-full px-3.5 py-1.5 text-sm font-medium whitespace-nowrap transition-colors",
                   active
                     ? "bg-primary/10 text-primary"
                     : "text-muted-foreground hover:bg-muted hover:text-foreground"
                 )}
               >
-                {item.label}
+                <item.icon className="size-4" />
+                <span className="hidden lg:inline">{item.label}</span>
               </Link>
             );
           })}
@@ -108,13 +108,16 @@ export function AgentTopbar({
         <DropdownMenu>
           <DropdownMenuTrigger
             render={
-              <Button variant="ghost" className="gap-2 rounded-full px-2 hover:bg-muted">
+              <Button variant="ghost" className="gap-2 rounded-full px-2 py-1 hover:bg-muted">
                 <Avatar className="size-7 ring-2 ring-background shadow-sm">
                   <AvatarFallback className="bg-gradient-to-br from-primary to-primary/70 text-xs font-medium text-primary-foreground">
                     {initials(name)}
                   </AvatarFallback>
                 </Avatar>
-                <span className="hidden text-sm font-medium sm:inline">{name}</span>
+                <span className="hidden flex-col items-start leading-tight sm:flex">
+                  <span className="text-sm font-medium">{name}</span>
+                  <span className="text-[0.68rem] text-muted-foreground">{company}</span>
+                </span>
               </Button>
             }
           />
