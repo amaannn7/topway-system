@@ -93,13 +93,22 @@ export async function getAgentApplicant(agentId: string, applicantId: string) {
   const assignment = await prisma.agentAssignment.findUnique({
     where: { agentId_applicantId: { agentId, applicantId } },
   });
-  if (!assignment) return null;
 
   const applicant = await prisma.applicant.findUnique({
     where: { id: applicantId },
     ...agentApplicantArgs,
   });
   if (!applicant) return null;
+
+  // Not yet assigned to this agent — still viewable/downloadable from the
+  // browse pool (same rule as getBrowsePool: excluded once SENT, and only
+  // when browse is turned on org-wide), just not through an AgentAssignment
+  // row.
+  if (!assignment) {
+    if (applicant.pipelineStatus === "SENT") return null;
+    const settings = await prisma.orgSettings.findUnique({ where: { id: "singleton" } });
+    if (!settings?.allowAgentBrowse) return null;
+  }
 
   return toAgentView(applicant);
 }

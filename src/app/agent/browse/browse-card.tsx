@@ -2,6 +2,7 @@
 
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import Image from "next/image";
 import { toast } from "sonner";
 import { UserRound } from "lucide-react";
@@ -50,31 +51,33 @@ export function BrowseCard({
         applicant.status === "assigned" && "border-l-4 border-l-success bg-gradient-to-br from-success/5 to-transparent"
       )}
     >
-      <div className="flex h-32 items-center justify-center bg-muted">
-        {applicant.headshotUrl ? (
-          <Image
-            src={applicant.headshotUrl}
-            alt=""
-            width={128}
-            height={128}
-            className="h-full w-full object-cover"
-          />
-        ) : (
-          <div className="flex size-12 items-center justify-center rounded-full bg-primary/10 text-primary">
-            <UserRound className="size-6" />
-          </div>
-        )}
-      </div>
-      <div className="flex flex-1 flex-col gap-1 p-3">
-        <p className="truncate text-sm font-semibold">{applicant.name || "(Unnamed)"}</p>
-        <p className="text-xs text-muted-foreground">{applicant.role}</p>
-        {applicant.experienceType && (
-          <p className="text-xs text-muted-foreground">
-            {EXPERIENCE_TYPE_LABELS[applicant.experienceType as keyof typeof EXPERIENCE_TYPE_LABELS]}
-          </p>
-        )}
-        {applicant.age && <p className="text-xs text-muted-foreground">Age: {applicant.age}</p>}
-      </div>
+      <Link href={`/agent/applicants/${applicant.id}`} className="flex flex-1 flex-col">
+        <div className="flex h-32 items-center justify-center bg-muted">
+          {applicant.headshotUrl ? (
+            <Image
+              src={applicant.headshotUrl}
+              alt=""
+              width={128}
+              height={128}
+              className="h-full w-full object-cover"
+            />
+          ) : (
+            <div className="flex size-12 items-center justify-center rounded-full bg-primary/10 text-primary">
+              <UserRound className="size-6" />
+            </div>
+          )}
+        </div>
+        <div className="flex flex-1 flex-col gap-1 p-3">
+          <p className="truncate text-sm font-semibold">{applicant.name || "(Unnamed)"}</p>
+          <p className="text-xs text-muted-foreground">{applicant.role}</p>
+          {applicant.experienceType && (
+            <p className="text-xs text-muted-foreground">
+              {EXPERIENCE_TYPE_LABELS[applicant.experienceType as keyof typeof EXPERIENCE_TYPE_LABELS]}
+            </p>
+          )}
+          {applicant.age && <p className="text-xs text-muted-foreground">Age: {applicant.age}</p>}
+        </div>
+      </Link>
       <div className="border-t p-2.5">
         <Button
           size="sm"

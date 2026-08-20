@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import Image from "next/image";
 import { auth } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 import { getAgentApplicant } from "@/lib/agent-applicant-view";
 import { deriveLifecycleStatus } from "@/lib/pipeline-status";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,6 +11,7 @@ import { DownloadCvButton } from "../download-cv-button";
 import { PdfPreviewDialog } from "@/components/pdf-preview-dialog";
 import { UserRound, IdCard, Briefcase } from "lucide-react";
 import { DisputeReportForm } from "./dispute-report-form";
+import { RequestActionButton } from "./request-action-button";
 import { cn } from "@/lib/utils";
 
 function Row({ label, value }: { label: string; value: React.ReactNode }) {
@@ -56,6 +58,19 @@ export default async function AgentApplicantDetailPage({
   const applicant = await getAgentApplicant(session!.user.id, id);
   if (!applicant) notFound();
 
+  const [assignment, pendingRequest] = await Promise.all([
+    prisma.agentAssignment.findUnique({
+      where: { agentId_applicantId: { agentId: session!.user.id, applicantId: id } },
+      select: { agentId: true },
+    }),
+    prisma.agentRequest.findUnique({
+      where: { agentId_applicantId: { agentId: session!.user.id, applicantId: id } },
+      select: { status: true },
+    }),
+  ]);
+  const isAssigned = !!assignment;
+  const isRequested = pendingRequest?.status === "PENDING";
+
   const lifecycle = deriveLifecycleStatus(applicant);
 
   const skills = [
@@ -83,7 +98,10 @@ export default async function AgentApplicantDetailPage({
             {applicant.role} · {applicant.contract}
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex items-center gap-2">
+          {!isAssigned && (
+            <RequestActionButton applicantId={applicant.id} requested={isRequested} />
+          )}
           <PdfPreviewDialog
             pdfUrl={`/agent/applicants/${applicant.id}/cv`}
             fileName={`${applicant.name || "candidate"}-cv.pdf`}
@@ -174,7 +192,7 @@ export default async function AgentApplicantDetailPage({
             </Card>
           )}
 
-          <DisputeReportForm applicantId={applicant.id} />
+          {isAssigned && <DisputeReportForm applicantId={applicant.id} />}
         </div>
       </div>
     </div>
