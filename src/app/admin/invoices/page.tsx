@@ -2,12 +2,11 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Plus, Receipt, FileText } from "lucide-react";
+import { Plus, Receipt, FileText, Lock } from "lucide-react";
 import { DeleteInvoiceButton } from "./delete-invoice-button";
 import { PdfPreviewDialog } from "@/components/pdf-preview-dialog";
 import { auth } from "@/lib/auth";
 import { canViewPayments } from "@/lib/require-session";
-import { MaskedAmount } from "./masked-amount";
 
 function fmtDate(d: Date) {
   return new Intl.DateTimeFormat("en-US", { year: "numeric", month: "long", day: "numeric" }).format(d);
@@ -17,14 +16,25 @@ function fmtAmount(n: number) {
 }
 
 export default async function AdminInvoicesPage() {
-  const [invoices, session] = await Promise.all([
-    prisma.invoice.findMany({
-      orderBy: { createdAt: "desc" },
-      include: { _count: { select: { workers: true } } },
-    }),
-    auth(),
-  ]);
-  const canSeePayments = !!session?.user && canViewPayments(session.user);
+  const session = await auth();
+  // The whole Invoices section is payment-gated, not just the amounts on
+  // it — staff without canViewPayments shouldn't see that invoices exist
+  // at all (company names, dates, worker counts), not just a masked total.
+  if (!session?.user || !canViewPayments(session.user)) {
+    return (
+      <Card className="flex flex-col items-center gap-2 py-16 text-center text-sm text-muted-foreground shadow-sm">
+        <div className="flex size-14 items-center justify-center rounded-full bg-muted text-muted-foreground">
+          <Lock className="size-6" />
+        </div>
+        <p>You don&apos;t have access to invoices.</p>
+      </Card>
+    );
+  }
+
+  const invoices = await prisma.invoice.findMany({
+    orderBy: { createdAt: "desc" },
+    include: { _count: { select: { workers: true } } },
+  });
 
   return (
     <div className="flex flex-col gap-6">
@@ -35,12 +45,10 @@ export default async function AdminInvoicesPage() {
             {invoices.length} invoice{invoices.length === 1 ? "" : "s"}
           </p>
         </div>
-        {canSeePayments && (
-          <Button size="lg" className="rounded-full px-4" render={<Link href="/admin/invoices/new" />}>
-            <Plus className="size-4" />
-            New invoice
-          </Button>
-        )}
+        <Button size="lg" className="rounded-full px-4" render={<Link href="/admin/invoices/new" />}>
+          <Plus className="size-4" />
+          New invoice
+        </Button>
       </div>
 
       {invoices.length === 0 ? (
@@ -71,11 +79,7 @@ export default async function AdminInvoicesPage() {
               </div>
               <div className="text-right">
                 <p className="font-bold tabular-nums">
-                  {canSeePayments ? (
-                    `${inv.currency} ${fmtAmount(Number(inv.total))}`
-                  ) : (
-                    <MaskedAmount />
-                  )}
+                  {inv.currency} {fmtAmount(Number(inv.total))}
                 </p>
                 <p className="text-[10px] font-medium text-muted-foreground uppercase">Total</p>
               </div>

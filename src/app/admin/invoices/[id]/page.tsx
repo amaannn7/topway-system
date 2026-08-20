@@ -3,11 +3,10 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Pencil, Download, FileText, Landmark, Users2 } from "lucide-react";
+import { Pencil, Download, FileText, Landmark, Users2, Lock } from "lucide-react";
 import { PdfPreviewDialog } from "@/components/pdf-preview-dialog";
 import { auth } from "@/lib/auth";
 import { canViewPayments } from "@/lib/require-session";
-import { MaskedAmount } from "../masked-amount";
 
 function Row({ label, value }: { label: string; value: React.ReactNode }) {
   if (value === null || value === undefined || value === "") return null;
@@ -47,17 +46,26 @@ export default async function InvoiceDetailPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const { id } = await params;
-  const [invoice, session] = await Promise.all([
-    prisma.invoice.findUnique({
-      where: { id },
-      include: { workers: { orderBy: { sortOrder: "asc" } } },
-    }),
-    auth(),
-  ]);
-  if (!invoice) notFound();
+  const session = await auth();
+  // Same as the invoices list — the whole invoice (not just the bank/amount
+  // fields) is off-limits to staff without payment access.
+  if (!session?.user || !canViewPayments(session.user)) {
+    return (
+      <Card className="flex flex-col items-center gap-2 py-16 text-center text-sm text-muted-foreground shadow-sm">
+        <div className="flex size-14 items-center justify-center rounded-full bg-muted text-muted-foreground">
+          <Lock className="size-6" />
+        </div>
+        <p>You don&apos;t have access to invoices.</p>
+      </Card>
+    );
+  }
 
-  const canSeePayments = !!session?.user && canViewPayments(session.user);
+  const { id } = await params;
+  const invoice = await prisma.invoice.findUnique({
+    where: { id },
+    include: { workers: { orderBy: { sortOrder: "asc" } } },
+  });
+  if (!invoice) notFound();
 
   return (
     <div className="flex flex-col gap-4">
@@ -74,12 +82,10 @@ export default async function InvoiceDetailPage({
           </div>
         </div>
         <div className="flex gap-2">
-          {canSeePayments && (
-            <Button variant="outline" render={<Link href={`/admin/invoices/${invoice.id}/edit`} />}>
-              <Pencil className="size-4" />
-              Edit
-            </Button>
-          )}
+          <Button variant="outline" render={<Link href={`/admin/invoices/${invoice.id}/edit`} />}>
+            <Pencil className="size-4" />
+            Edit
+          </Button>
           <PdfPreviewDialog
             pdfUrl={`/admin/invoices/${invoice.id}/pdf`}
             fileName={`Invoice_${invoice.invoiceNo}.pdf`}
@@ -115,18 +121,10 @@ export default async function InvoiceDetailPage({
             <CardTitle className="text-sm">Bank details</CardTitle>
           </CardHeader>
           <CardContent className="divide-y divide-border/60">
-            {canSeePayments ? (
-              <>
-                <Row label="Bank name" value={invoice.bankName} />
-                <Row label="Account number" value={invoice.accountNo} />
-                <Row label="Account name" value={invoice.accountName} />
-                <Row label="SWIFT code" value={invoice.swiftCode} />
-              </>
-            ) : (
-              <p className="py-2 text-sm text-muted-foreground">
-                <MaskedAmount />. You don&apos;t have access to payment details.
-              </p>
-            )}
+            <Row label="Bank name" value={invoice.bankName} />
+            <Row label="Account number" value={invoice.accountNo} />
+            <Row label="Account name" value={invoice.accountName} />
+            <Row label="SWIFT code" value={invoice.swiftCode} />
           </CardContent>
         </Card>
       </div>
@@ -143,7 +141,7 @@ export default async function InvoiceDetailPage({
                 {w.name} × {w.qty}
               </span>
               <span className="tabular-nums">
-                {canSeePayments ? `${invoice.currency} ${fmtAmount(Number(w.amount))}` : <MaskedAmount />}
+                {invoice.currency} {fmtAmount(Number(w.amount))}
               </span>
             </div>
           ))}
@@ -151,14 +149,14 @@ export default async function InvoiceDetailPage({
             <div className="flex justify-between border-t pt-1 text-sm text-muted-foreground">
               <span>Advance ({invoice.advanceStatus.toLowerCase()})</span>
               <span className="tabular-nums">
-                {canSeePayments ? `${invoice.currency} ${fmtAmount(Number(invoice.advanceAmount))}` : <MaskedAmount />}
+                {invoice.currency} {fmtAmount(Number(invoice.advanceAmount))}
               </span>
             </div>
           )}
           <div className="flex justify-between border-t pt-2 text-sm font-semibold">
             <span>Total</span>
             <span className="tabular-nums">
-              {canSeePayments ? `${invoice.currency} ${fmtAmount(Number(invoice.total))}` : <MaskedAmount />}
+              {invoice.currency} {fmtAmount(Number(invoice.total))}
             </span>
           </div>
         </CardContent>

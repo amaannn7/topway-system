@@ -1,13 +1,18 @@
 import { NextResponse } from "next/server";
 import { renderToBuffer } from "@react-pdf/renderer";
 import { prisma } from "@/lib/prisma";
-import { requireAdmin } from "@/lib/require-session";
+import { requirePaymentAccess } from "@/lib/require-session";
 import { InvoiceDocument } from "@/lib/invoice-pdf";
 import { uploadPathToPdfSrc } from "@/lib/pdf-assets";
 
+// requirePaymentAccess, not just requireAdmin — this PDF embeds bank
+// account number, SWIFT code, and the total, so anyone who can hit this
+// route directly gets the same data the UI masks for staff without
+// canViewPayments. The UI-level mask on the invoice detail page is not a
+// substitute for gating this route.
 export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    await requireAdmin();
+    await requirePaymentAccess();
   } catch {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }

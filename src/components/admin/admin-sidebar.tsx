@@ -45,7 +45,12 @@ const NAV_GROUPS = [
       { href: "/admin/applicants", label: "Applicants", icon: Users },
       { href: "/admin/agents", label: "Agents", icon: Building2 },
       { href: "/admin/requests", label: "Requests", icon: Inbox },
-      { href: "/admin/invoices", label: "Invoices", icon: Receipt },
+      // Gated below by canViewPayments — invoices carry bank details and
+      // amounts, so staff without that permission shouldn't even see the
+      // link (matches the redirect already enforced on the pages/actions
+      // themselves; this just keeps the nav from advertising a section
+      // they'd immediately be bounced out of).
+      { href: "/admin/invoices", label: "Invoices", icon: Receipt, requiresPayments: true },
     ],
   },
   {
@@ -59,7 +64,13 @@ const ACTIVE_ACCENT_CLASSES = "[&_svg]:text-primary";
 const ACTIVE_BG_CLASSES =
   "data-active:bg-primary/30 data-active:ring-1 data-active:ring-primary/20 data-active:before:bg-primary";
 
-export function AdminSidebar({ pendingRequestCount = 0 }: { pendingRequestCount?: number }) {
+export function AdminSidebar({
+  pendingRequestCount = 0,
+  canViewPayments = false,
+}: {
+  pendingRequestCount?: number;
+  canViewPayments?: boolean;
+}) {
   const pathname = usePathname();
 
   return (
@@ -97,7 +108,9 @@ export function AdminSidebar({ pendingRequestCount = 0 }: { pendingRequestCount?
             </SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu className="gap-1">
-                {group.items.map((item) => {
+                {group.items
+                  .filter((item) => !("requiresPayments" in item && item.requiresPayments) || canViewPayments)
+                  .map((item) => {
                   const active =
                     pathname === item.href || pathname.startsWith(item.href + "/");
                   return (

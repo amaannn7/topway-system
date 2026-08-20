@@ -106,7 +106,7 @@ export async function updateInvoice(invoiceId: string, raw: unknown) {
 }
 
 export async function deleteInvoice(invoiceId: string) {
-  const admin = await requireAdmin();
+  const admin = await requirePaymentAccess();
   const invoice = await prisma.invoice.findUnique({
     where: { id: invoiceId },
     select: { invoiceNo: true, billToCompany: true },

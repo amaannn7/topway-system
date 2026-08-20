@@ -1,17 +1,19 @@
 import { NextResponse } from "next/server";
 import { renderToBuffer } from "@react-pdf/renderer";
 import { prisma } from "@/lib/prisma";
-import { requireAdmin } from "@/lib/require-session";
+import { requirePaymentAccess } from "@/lib/require-session";
 import { invoiceFormSchema } from "@/lib/validations/invoice";
 import { InvoiceDocument } from "@/lib/invoice-pdf";
 import { uploadPathToPdfSrc } from "@/lib/pdf-assets";
 
 // Renders a PDF from unsaved form values — matches the legacy invoice.html
 // previewFromForm() behavior (preview before the first save). Nothing is
-// persisted; this is a pure render.
+// persisted; this is a pure render. requirePaymentAccess since the form
+// values being previewed include bank details and amounts (only reachable
+// from the invoice form anyway, which is already gated the same way).
 export async function POST(req: Request) {
   try {
-    await requireAdmin();
+    await requirePaymentAccess();
   } catch {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
