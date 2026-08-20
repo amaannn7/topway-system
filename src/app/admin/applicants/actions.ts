@@ -156,6 +156,34 @@ export async function deleteApplicant(applicantId: string) {
   revalidatePath("/admin/applicants");
 }
 
+// One-click resume for an On Hold applicant — a lighter path than opening
+// the full pipeline form just to flip one dropdown back to Active.
+export async function resumeApplicant(applicantId: string) {
+  const admin = await requireAdmin();
+  const applicant = await prisma.applicant.findUnique({
+    where: { id: applicantId },
+    select: { name: true, pipelineStatus: true },
+  });
+  if (!applicant) throw new Error("Applicant not found");
+  if (applicant.pipelineStatus !== "ON_HOLD") return;
+
+  await prisma.applicant.update({
+    where: { id: applicantId },
+    data: { pipelineStatus: "ACTIVE" },
+  });
+
+  await logAudit({
+    adminUserId: admin.id,
+    action: "STATUS_CHANGE",
+    entityType: "Applicant",
+    entityId: applicantId,
+    summary: `Resumed ${applicant.name || "(unnamed)"} from on hold`,
+  });
+
+  revalidatePath("/admin/applicants");
+  revalidatePath(`/admin/applicants/${applicantId}`);
+}
+
 export async function updatePipeline(raw: unknown) {
   const admin = await requireAdmin();
   const values = pipelineUpdateSchema.parse(raw);

@@ -47,7 +47,7 @@ export function PipelineForm({
     workerCategory: string | null;
     experienceType: string | null;
     confirmed: boolean;
-    pipelineStatus: "ACTIVE" | "SENT" | "CANCELLED";
+    pipelineStatus: "ACTIVE" | "SENT" | "CANCELLED" | "ON_HOLD";
     musanedDate: Date | null;
     ticketDate: Date | null;
     saudiAgentVisaDate: Date | null;
@@ -201,9 +201,15 @@ export function PipelineForm({
               <SelectContent>
                 <SelectItem value="ACTIVE">Active</SelectItem>
                 <SelectItem value="SENT">Sent (removes from agent browse pool)</SelectItem>
+                <SelectItem value="ON_HOLD">On hold (temporarily paused)</SelectItem>
                 <SelectItem value="CANCELLED">Cancelled</SelectItem>
               </SelectContent>
             </Select>
+            {pipelineStatus === "ON_HOLD" && (
+              <p className="mt-1.5 text-xs text-muted-foreground">
+                Paused, not cancelled. Switch back to Active any time to resume processing.
+              </p>
+            )}
           </div>
         </CardContent>
       </Card>

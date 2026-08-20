@@ -39,6 +39,7 @@ export default async function AdminApplicantsPage({
       include: {
         pipelineSteps: { select: { key: true, completed: true } },
         photos: { where: { kind: "HEADSHOT" }, select: { url: true }, take: 1 },
+        disputes: { orderBy: { reportedAt: "desc" }, take: 1, select: { category: true } },
       },
     }),
     prisma.applicant.findMany({
@@ -89,6 +90,7 @@ export default async function AdminApplicantsPage({
         ticketDate: a.ticketDate,
         saudiAgentVisaDate: a.saudiAgentVisaDate,
         lifecycleStatus: lc.status,
+        latestDisputeCategory: a.disputes[0]?.category ?? null,
       } satisfies ApplicantRow;
     })
     .filter((a) => !status || a.status === status)

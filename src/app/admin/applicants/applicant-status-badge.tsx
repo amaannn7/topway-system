@@ -9,6 +9,7 @@ const STATUS_STYLES: Record<DerivedStatus, string> = {
   PENDING: "bg-muted text-muted-foreground border-transparent",
   SENT: "bg-secondary text-white border-transparent dark:bg-secondary dark:text-white",
   CANCELLED: "bg-destructive/10 text-destructive border-destructive/25",
+  ON_HOLD: "bg-amber/15 text-amber-foreground border-amber/30",
 };
 
 export function ApplicantStatusBadge({ status }: { status: DerivedStatus }) {

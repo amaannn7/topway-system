@@ -21,6 +21,7 @@ import {
 import { delaySeverity, deriveLifecycleStatus, LIFECYCLE_STATUS_LABEL } from "@/lib/pipeline-status";
 import { PIPELINE_STEPS } from "@/lib/constants/applicant";
 import { cn } from "@/lib/utils";
+import { ContractCompleteNotice } from "./contract-complete-notice";
 
 function fmtWhen(d: Date) {
   return new Intl.DateTimeFormat("en-GB", {
@@ -89,7 +90,13 @@ export default async function AdminDashboardPage() {
       // destinationCountry, so we pull the raw dates and compute in memory.
       prisma.applicant.findMany({
         where: { departureDate: { not: null } },
-        select: { departureDate: true, destinationCountry: true },
+        select: {
+          id: true,
+          name: true,
+          departureDate: true,
+          destinationCountry: true,
+          contractCompleteNotifiedAt: true,
+        },
       }),
     ]);
 
@@ -102,9 +109,13 @@ export default async function AdminDashboardPage() {
     MID_CONTRACT: 0,
     CONTRACT_COMPLETE: 0,
   };
+  const newlyContractComplete: { id: string; name: string }[] = [];
   for (const a of departed) {
     const { status } = deriveLifecycleStatus(a);
     if (status !== "NOT_DEPARTED") lifecycleCounts[status]++;
+    if (status === "CONTRACT_COMPLETE" && !a.contractCompleteNotifiedAt) {
+      newlyContractComplete.push({ id: a.id, name: a.name });
+    }
   }
   const eligibleForRemarketing = lifecycleCounts.CONTRACT_COMPLETE;
 
@@ -149,6 +160,7 @@ export default async function AdminDashboardPage() {
 
   return (
     <div className="flex flex-col gap-6">
+      <ContractCompleteNotice applicants={newlyContractComplete} />
       <div className="flex flex-col justify-between gap-4 rounded-2xl bg-gradient-to-br from-primary/10 via-primary/5 to-transparent p-5 ring-1 ring-primary/10 sm:flex-row sm:items-center">
         <div className="flex items-center gap-3.5">
           <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary/15 text-primary ring-1 ring-primary/10">

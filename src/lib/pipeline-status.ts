@@ -10,7 +10,8 @@ export type DerivedStatus =
   | "PROGRESS"
   | "PENDING"
   | "SENT"
-  | "CANCELLED";
+  | "CANCELLED"
+  | "ON_HOLD";
 
 export const STATUS_LABEL: Record<DerivedStatus, string> = {
   READY: "Ready to travel",
@@ -19,15 +20,17 @@ export const STATUS_LABEL: Record<DerivedStatus, string> = {
   PENDING: "Not started",
   SENT: "Sent",
   CANCELLED: "Cancelled",
+  ON_HOLD: "On hold",
 };
 
 export function deriveStatus(applicant: {
-  pipelineStatus: "ACTIVE" | "SENT" | "CANCELLED";
+  pipelineStatus: "ACTIVE" | "SENT" | "CANCELLED" | "ON_HOLD";
   ticketDate: Date | null;
   pipelineSteps: PipelineStepLite[];
 }): DerivedStatus {
   if (applicant.pipelineStatus === "SENT") return "SENT";
   if (applicant.pipelineStatus === "CANCELLED") return "CANCELLED";
+  if (applicant.pipelineStatus === "ON_HOLD") return "ON_HOLD";
 
   const total = applicant.pipelineSteps.length;
   const done = applicant.pipelineSteps.filter((s) => s.completed).length;
@@ -58,10 +61,24 @@ export const LIFECYCLE_STATUS_LABEL: Record<LifecycleStatus, string> = {
   CONTRACT_COMPLETE: "Contract completed",
 };
 
+// Shared with history-panel.tsx (where disputes are logged) and the
+// applicants list (which surfaces the most recent dispute, if any, next to
+// the contract-lifecycle column) — one label/style set so the two views
+// can't drift.
+export type DisputeCategory = "RUNAWAY" | "REFUSAL_TO_WORK" | "MEDICALLY_UNFIT" | "OTHER";
+
+export const DISPUTE_CATEGORY_LABEL: Record<DisputeCategory, string> = {
+  RUNAWAY: "Runaway",
+  REFUSAL_TO_WORK: "Refusal to work",
+  MEDICALLY_UNFIT: "Medically unfit",
+  OTHER: "Other",
+};
+
 const PROBATION_MONTHS: Record<string, number> = {
   "Saudi Arabia": 3,
   Kuwait: 6,
   Oman: 6,
+  Qatar: 9,
 };
 const DEFAULT_PROBATION_MONTHS = 6;
 const MID_CONTRACT_MONTHS = 12;

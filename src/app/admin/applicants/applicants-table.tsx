@@ -5,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { UserRound, Pencil, Trash2, Check } from "lucide-react";
+import { UserRound, Pencil, Trash2, Check, Play } from "lucide-react";
 import {
   TableBody,
   TableCell,
@@ -29,8 +29,13 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { ApplicantStatusBadge } from "./applicant-status-badge";
 import { LifecycleStatusBadge } from "./lifecycle-status-badge";
 import { ProfileViewDialog, type ProfileViewData } from "./profile-view-dialog";
-import { deleteApplicant } from "./actions";
-import type { DelaySeverity, LifecycleStatus } from "@/lib/pipeline-status";
+import { deleteApplicant, resumeApplicant } from "./actions";
+import {
+  DISPUTE_CATEGORY_LABEL,
+  type DelaySeverity,
+  type DisputeCategory,
+  type LifecycleStatus,
+} from "@/lib/pipeline-status";
 import { PIPELINE_STEPS } from "@/lib/constants/applicant";
 import { cn } from "@/lib/utils";
 
@@ -39,6 +44,13 @@ const DELAY_STYLES: Record<DelaySeverity, string> = {
   warn: "bg-warning/15 text-warning-foreground",
   late: "bg-destructive/10 text-destructive",
   none: "bg-muted text-muted-foreground",
+};
+
+const DISPUTE_CATEGORY_STYLES: Record<DisputeCategory, string> = {
+  RUNAWAY: "bg-destructive/10 text-destructive",
+  REFUSAL_TO_WORK: "bg-warning/15 text-warning-foreground",
+  MEDICALLY_UNFIT: "bg-info/10 text-info",
+  OTHER: "bg-muted text-muted-foreground",
 };
 
 export type ApplicantRow = ProfileViewData & {
@@ -52,6 +64,7 @@ export type ApplicantRow = ProfileViewData & {
   ticketDate: Date | null;
   saudiAgentVisaDate: Date | null;
   lifecycleStatus: LifecycleStatus;
+  latestDisputeCategory: DisputeCategory | null;
 };
 
 const STEP_COLUMNS = PIPELINE_STEPS;
@@ -110,6 +123,35 @@ function DeleteRowButton({ id, name }: { id: string; name: string }) {
   );
 }
 
+function ResumeRowButton({ id, name }: { id: string; name: string }) {
+  const router = useRouter();
+  const [pending, setPending] = useState(false);
+
+  return (
+    <Button
+      variant="ghost"
+      size="icon-sm"
+      aria-label="Resume"
+      title={`Resume ${name || "this applicant"}`}
+      disabled={pending}
+      onClick={async (e) => {
+        e.stopPropagation();
+        setPending(true);
+        try {
+          await resumeApplicant(id);
+          toast.success("Application resumed");
+          router.refresh();
+        } catch {
+          toast.error("Could not resume application");
+          setPending(false);
+        }
+      }}
+    >
+      <Play className="size-3.5" />
+    </Button>
+  );
+}
+
 export function ApplicantsTable({ rows }: { rows: ApplicantRow[] }) {
   const [viewing, setViewing] = useState<ApplicantRow | null>(null);
 
@@ -130,13 +172,14 @@ export function ApplicantsTable({ rows }: { rows: ApplicantRow[] }) {
               <TableHead className="w-20">Visa</TableHead>
               <TableHead className="w-24">Status</TableHead>
               <TableHead className="w-32">Contract</TableHead>
+              <TableHead className="w-28">Dispute</TableHead>
               <TableHead className="w-16 pr-4 text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody className="[&_tr:nth-child(even)]:bg-muted/25">
             {rows.length === 0 && (
               <TableRow className="hover:bg-transparent">
-                <TableCell colSpan={12} className="py-16 text-center text-sm text-muted-foreground">
+                <TableCell colSpan={13} className="py-16 text-center text-sm text-muted-foreground">
                   No applicants match the current filters.
                 </TableCell>
               </TableRow>
@@ -234,8 +277,23 @@ export function ApplicantsTable({ rows }: { rows: ApplicantRow[] }) {
                     <LifecycleStatusBadge status={a.lifecycleStatus} />
                   )}
                 </TableCell>
+                <TableCell>
+                  {a.latestDisputeCategory ? (
+                    <span
+                      className={cn(
+                        "inline-flex rounded-full px-2 py-0.5 text-xs font-medium whitespace-nowrap",
+                        DISPUTE_CATEGORY_STYLES[a.latestDisputeCategory]
+                      )}
+                    >
+                      {DISPUTE_CATEGORY_LABEL[a.latestDisputeCategory]}
+                    </span>
+                  ) : (
+                    <span className="text-muted-foreground">–</span>
+                  )}
+                </TableCell>
                 <TableCell className="pr-4 text-right" onClick={(e) => e.stopPropagation()}>
                   <div className="flex justify-end gap-1 opacity-60 transition-opacity group-hover:opacity-100">
+                    {a.status === "ON_HOLD" && <ResumeRowButton id={a.id} name={a.name} />}
                     <Button
                       variant="ghost"
                       size="icon-sm"

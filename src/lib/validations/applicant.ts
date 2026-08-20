@@ -106,7 +106,7 @@ export const pipelineUpdateSchema = z.object({
     .nullable()
     .optional(),
   confirmed: z.boolean().optional(),
-  pipelineStatus: z.enum(["ACTIVE", "SENT", "CANCELLED"]).optional(),
+  pipelineStatus: z.enum(["ACTIVE", "SENT", "CANCELLED", "ON_HOLD"]).optional(),
   musanedDate: dateOrEmpty,
   ticketDate: dateOrEmpty,
   saudiAgentVisaDate: dateOrEmpty,

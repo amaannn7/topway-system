@@ -23,7 +23,7 @@ import {
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { STATUS_LABEL, delaySeverity, type DerivedStatus, type DelaySeverity } from "@/lib/pipeline-status";
-import { EXPERIENCE_TYPE_LABELS, PIPELINE_STEPS } from "@/lib/constants/applicant";
+import { EXPERIENCE_TYPE_LABELS, WORKER_CATEGORY_LABELS, PIPELINE_STEPS } from "@/lib/constants/applicant";
 import { ApplicantStatusBadge } from "@/app/admin/applicants/applicant-status-badge";
 import { ApplicantCard } from "./applicant-card";
 import type { AgentApplicantView } from "@/lib/agent-applicant-view";
@@ -33,6 +33,12 @@ const DELAY_STYLES: Record<DelaySeverity, string> = {
   warn: "bg-warning/15 text-warning-foreground",
   late: "bg-destructive/10 text-destructive",
   none: "bg-muted text-muted-foreground",
+};
+
+const WORKER_CATEGORY_STYLES: Record<string, string> = {
+  AVAILABLE_EXPERIENCED: "bg-success/15 text-success",
+  AVAILABLE_INEXPERIENCED: "bg-warning/15 text-warning-foreground",
+  CONTRACTED: "bg-info/15 text-info",
 };
 
 function fmtShortDate(d: Date | string | null) {
@@ -163,6 +169,7 @@ export function ApplicantsView({ applicants }: { applicants: AgentApplicantView[
                   <TableHead className="w-[62px] pl-5"></TableHead>
                   <TableHead>Name</TableHead>
                   <TableHead>Role</TableHead>
+                  <TableHead>Category</TableHead>
                   <TableHead>Experience</TableHead>
                   <TableHead>Musaned</TableHead>
                   <TableHead>Delay</TableHead>
@@ -207,6 +214,20 @@ export function ApplicantsView({ applicants }: { applicants: AgentApplicantView[
                         </div>
                       </TableCell>
                       <TableCell className="text-muted-foreground">{a.role}</TableCell>
+                      <TableCell>
+                        {a.workerCategory ? (
+                          <span
+                            className={cn(
+                              "inline-flex rounded-full px-2 py-0.5 text-xs font-medium whitespace-nowrap",
+                              WORKER_CATEGORY_STYLES[a.workerCategory] ?? "bg-muted text-muted-foreground"
+                            )}
+                          >
+                            {WORKER_CATEGORY_LABELS[a.workerCategory as keyof typeof WORKER_CATEGORY_LABELS]}
+                          </span>
+                        ) : (
+                          <span className="text-muted-foreground">–</span>
+                        )}
+                      </TableCell>
                       <TableCell className="text-muted-foreground">
                         {a.experienceType
                           ? EXPERIENCE_TYPE_LABELS[a.experienceType as keyof typeof EXPERIENCE_TYPE_LABELS]

@@ -23,16 +23,8 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { DISPUTE_CATEGORY_LABEL, type DisputeCategory } from "@/lib/pipeline-status";
 import { logDispute, remarketApplicant } from "./actions";
-
-type DisputeCategory = "RUNAWAY" | "REFUSAL_TO_WORK" | "MEDICALLY_UNFIT" | "OTHER";
-
-const DISPUTE_CATEGORY_LABELS: Record<DisputeCategory, string> = {
-  RUNAWAY: "Runaway",
-  REFUSAL_TO_WORK: "Refusal to work",
-  MEDICALLY_UNFIT: "Medically unfit",
-  OTHER: "Other",
-};
 
 const DISPUTE_CATEGORY_STYLES: Record<DisputeCategory, string> = {
   RUNAWAY: "bg-destructive/10 text-destructive border-destructive/25",
@@ -145,7 +137,7 @@ export function HistoryPanel({
                 <SelectValue placeholder="Select a category" />
               </SelectTrigger>
               <SelectContent>
-                {Object.entries(DISPUTE_CATEGORY_LABELS).map(([value, label]) => (
+                {Object.entries(DISPUTE_CATEGORY_LABEL).map(([value, label]) => (
                   <SelectItem key={value} value={value}>
                     {label}
                   </SelectItem>
@@ -197,7 +189,7 @@ export function HistoryPanel({
                     <SelectContent>
                       {disputes.map((d) => (
                         <SelectItem key={d.id} value={d.id}>
-                          {DISPUTE_CATEGORY_LABELS[d.category]} · {fmtDateTime(d.reportedAt)}
+                          {DISPUTE_CATEGORY_LABEL[d.category]} · {fmtDateTime(d.reportedAt)}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -269,7 +261,7 @@ export function HistoryPanel({
               </div>
               {r.disputeCategory && (
                 <Badge variant="outline" className={cn("border text-xs", DISPUTE_CATEGORY_STYLES[r.disputeCategory])}>
-                  {DISPUTE_CATEGORY_LABELS[r.disputeCategory]}
+                  {DISPUTE_CATEGORY_LABEL[r.disputeCategory]}
                 </Badge>
               )}
             </div>
@@ -291,7 +283,7 @@ export function HistoryPanel({
                 </p>
               </div>
               <Badge variant="outline" className={cn("border text-xs", DISPUTE_CATEGORY_STYLES[d.category])}>
-                {DISPUTE_CATEGORY_LABELS[d.category]}
+                {DISPUTE_CATEGORY_LABEL[d.category]}
               </Badge>
             </div>
           ))}
